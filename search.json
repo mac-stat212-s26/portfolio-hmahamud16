@@ -43,6 +43,72 @@
     ]
   },
   {
+    "objectID": "tt/hw01-tt.html",
+    "href": "tt/hw01-tt.html",
+    "title": "Homework 01",
+    "section": "",
+    "text": "TidyTuesday Section\nExplore the week’s TidyTuesday challenge. Develop a research question, then answer it through a short data story with effective visualization(s). Provide sufficient background for readers to grasp your narrative.\n###This week’s Tidy Tuesday is on Brazilian companies and their financial details. Particularly, I am looking to see whether there is a relationship between headcount and capitalization.\n##I hypothesize that the higher the headcount of a company, the higher their capital stock will be.",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
+    "objectID": "tt/hw01-tt.html#load-libraries",
+    "href": "tt/hw01-tt.html#load-libraries",
+    "title": "Homework 01",
+    "section": "Load Libraries!",
+    "text": "Load Libraries!\n\nCodelibrary(tidyverse)\nlibrary(scales)\nlibrary(ggplot2)\nlibrary(viridis)\n\n# Set theme\ntheme_set(theme_minimal(base_size = 12))",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
+    "objectID": "tt/hw01-tt.html#data-cleaning-remove-outliers-using-iqr-method",
+    "href": "tt/hw01-tt.html#data-cleaning-remove-outliers-using-iqr-method",
+    "title": "Homework 01",
+    "section": "Data Cleaning: Remove Outliers Using IQR Method",
+    "text": "Data Cleaning: Remove Outliers Using IQR Method\nI used the IQR (Interquartile Range) method with a 1.5 × IQR threshold to identify and remove outliers from the capital_stock variable. This is a standard marker used to remove extreme outliers and standardize variables to analyze.\n\nCode# Calculate IQR boundaries\nQ1 &lt;- quantile(companies$capital_stock, 0.25, na.rm = TRUE)\nQ3 &lt;- quantile(companies$capital_stock, 0.75, na.rm = TRUE)\nIQR_value &lt;- Q3 - Q1\n\n# Define outlier boundaries\nlower_bound &lt;- Q1 - 1.5 * IQR_value\nupper_bound &lt;- Q3 + 1.5 * IQR_value\n\n# Count outliers\nn_outliers &lt;- sum(companies$capital_stock &lt; lower_bound |\n                  companies$capital_stock &gt; upper_bound, na.rm = TRUE)\n\n# Remove outliers\ncompanies_clean &lt;- companies %&gt;%\n  filter(capital_stock &gt;= lower_bound & capital_stock &lt;= upper_bound)",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
+    "objectID": "tt/hw01-tt.html#summary-statistics-by-company-size",
+    "href": "tt/hw01-tt.html#summary-statistics-by-company-size",
+    "title": "Homework 01",
+    "section": "Summary Statistics by Company Size",
+    "text": "Summary Statistics by Company Size\nI also wanted to get a glimpse of the averages and standard deviations before continuing on to making visualizations.\n\nCode# Calculate summary statistics\nsummary_stats &lt;- companies_clean %&gt;%\n  group_by(company_size) %&gt;%\n  summarise(\n    n = n(),\n    mean_capital = mean(capital_stock, na.rm = TRUE),\n    median_capital = median(capital_stock, na.rm = TRUE),\n    sd_capital = sd(capital_stock, na.rm = TRUE),\n    min_capital = min(capital_stock, na.rm = TRUE),\n    max_capital = max(capital_stock, na.rm = TRUE)\n  ) %&gt;%\n  arrange(desc(median_capital))\n\nprint(summary_stats)\n\n# A tibble: 3 × 7\n  company_size         n mean_capital median_capital sd_capital min_capital\n  &lt;chr&gt;            &lt;int&gt;        &lt;dbl&gt;          &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;\n1 other            28215      767249.         590000    541277.     150001 \n2 micro-enterprise 62911      408728.         300000    341694.     150000.\n3 small-enterprise 29999      484254.         300000    394515.     150100 \n# ℹ 1 more variable: max_capital &lt;dbl&gt;",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
+    "objectID": "tt/hw01-tt.html#visualization-1-box-plot-by-company-size",
+    "href": "tt/hw01-tt.html#visualization-1-box-plot-by-company-size",
+    "title": "Homework 01",
+    "section": "Visualization 1: Box Plot by Company Size",
+    "text": "Visualization 1: Box Plot by Company Size\n\nCodecompanies_clean %&gt;%\n  ggplot(aes(x = reorder(company_size, capital_stock, FUN = median),\n             y = capital_stock,\n             fill = company_size)) +\n  geom_boxplot(alpha = 0.7, outlier.shape = 21, outlier.size = 2) +\n  scale_y_continuous(labels = dollar_format(prefix = \"R$\", scale = 1e-6, suffix = \"M\"),\n                     breaks = seq(0, max(companies_clean$capital_stock), by = 500000)) +\n  scale_fill_viridis_d(option = \"plasma\", begin = 0.2, end = 0.8) +\n  labs(\n    title = \"Capital Stock Distribution by Company Size\",\n    subtitle = \"After removing outliers using IQR method (1.5 × IQR)\",\n    x = \"Company Size\",\n    y = \"Capital Stock (R$ Millions)\",\n    fill = \"Company Size\",\n    caption = \"Data: Tidy Tuesday | Outliers removed using IQR method\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(\n    plot.title = element_text(face = \"bold\", size = 16),\n    plot.subtitle = element_text(color = \"gray40\"),\n    axis.text.x = element_text(angle = 45, hjust = 1),\n    legend.position = \"none\",\n    panel.grid.minor = element_blank()\n  )\n\n\n\n\n\n\n\nI think it’s interesting that micro and small caps are similarly capitalized, when adjusting for outliers. Clearly “other” which I interpret to be large caps in this case, have a much higher average capital stock and spread as well.",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
+    "objectID": "tt/hw01-tt.html#visualization-2-bar-chart-with-mean-and-median",
+    "href": "tt/hw01-tt.html#visualization-2-bar-chart-with-mean-and-median",
+    "title": "Homework 01",
+    "section": "Visualization 2: Bar Chart with Mean and Median",
+    "text": "Visualization 2: Bar Chart with Mean and Median\nBar charts comparing both mean and median capital stock across company size categories to show central tendency.\n\nCode# Prepare data for plotting\nsummary_long &lt;- summary_stats %&gt;%\n  select(company_size, mean_capital, median_capital) %&gt;%\n  pivot_longer(cols = c(mean_capital, median_capital),\n               names_to = \"statistic\",\n               values_to = \"value\") %&gt;%\n  mutate(statistic = recode(statistic,\n                           \"mean_capital\" = \"Mean\",\n                           \"median_capital\" = \"Median\"))\n\n# Create bar chart\nggplot(summary_long, aes(x = reorder(company_size, -value),\n                         y = value,\n                         fill = statistic)) +\n  geom_col(position = \"dodge\", alpha = 0.8, width = 0.7) +\n  geom_text(aes(label = paste0(\"R$\", round(value/1e6, 1), \"M\")),\n            position = position_dodge(width = 0.7),\n            vjust = -0.5, size = 3.5) +\n  scale_y_continuous(labels = dollar_format(prefix = \"R$\", scale = 1e-6, suffix = \"M\"),\n                     expand = expansion(mult = c(0, 0.15))) +\n  scale_fill_manual(values = c(\"Mean\" = \"#E69F00\", \"Median\" = \"#56B4E9\")) +\n  labs(\n    title = \"Mean vs Median Capital Stock by Company Size\",\n    subtitle = \"Comparing central tendency measures across company size categories\",\n    x = \"Company Size\",\n    y = \"Capital Stock (R$ Millions)\",\n    fill = \"Statistic\",\n    caption = \"Mean is more sensitive to extreme values; Median is more robust\"\n  ) +\n  theme_minimal(base_size = 13) +\n  theme(\n    plot.title = element_text(face = \"bold\", size = 16),\n    plot.subtitle = element_text(color = \"gray40\"),\n    axis.text.x = element_text(angle = 45, hjust = 1),\n    legend.position = \"top\",\n    panel.grid.minor = element_blank(),\n    panel.grid.major.x = element_blank()\n  )\n\n\n\n\n\n\n\nThis shows the mean and median of capital stock across company size, and it helps with robustness as well. It does show that the medians of small and micro enterprises are essentially the same, and thus that although the mean for small are higher, it has mainly to do with a few higher earners.\nSummary:\nIn short, there is a relationship between company size and capital stock, but only between the lower two categories and “other”. In reality, other should be “large-enterprise” as that name more accurately reflects the companies it represents.",
+    "crumbs": [
+      "TidyTuesday",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Homework 01</span>"
+    ]
+  },
+  {
     "objectID": "pcl/pcl.html",
     "href": "pcl/pcl.html",
     "title": "Pre-Class Learning Summaries",
@@ -50,7 +116,7 @@
     "text": "R",
     "crumbs": [
       "Pre-Class Learnings",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Pre-Class Learning Summaries</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Pre-Class Learning Summaries</span>"
     ]
   },
   {
@@ -61,7 +127,7 @@
     "text": "Quarto\n\n\n\nfrom qmd4sci.njtierney.com",
     "crumbs": [
       "Pre-Class Learnings",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Pre-Class Learning Summaries</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Pre-Class Learning Summaries</span>"
     ]
   },
   {
@@ -72,7 +138,7 @@
     "text": "Add content here",
     "crumbs": [
       "In-Class Activities",
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>ICA Sample 1</span>"
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>ICA Sample 1</span>"
     ]
   },
   {
@@ -83,7 +149,7 @@
     "text": "Add content here",
     "crumbs": [
       "In-Class Activities",
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>ICA Sample 2</span>"
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>ICA Sample 2</span>"
     ]
   },
   {
@@ -94,7 +160,7 @@
     "text": "Exercise\nCarryout the following steps to clean and save the San Francisco Weather data. Make sure to download and add the data file to your portfolio repository as instructed.\nCodelibrary(readr)\nlibrary(tidyverse)\nlibrary(dplyr)\nlibrary(ggplot2)\nCodeweather &lt;- read_csv(\"~/portfolio-hmahamud16/ica/data/raw/weather.csv\")\nCode# I think that RecordText is the one that doesn't make sense in this context..\n\nweather_clean &lt;- weather |&gt;   \n    mutate(PrecipYr = na_if(PrecipYr, 99999))\nCode# DateInYear chunk: \n\nweather_clean &lt;- weather_clean |&gt; \n    arrange(Month, Day) |&gt; \n    mutate(dateInYear = 1:365)\nCode#month_name chunk: \n\nmonths &lt;- tibble(\n    Month = 1:12,\n    month_name = month.abb)\n\nweather_clean &lt;- weather_clean |&gt; \n    left_join(months)\nCode# write file to process csv\n\nwrite_csv(weather_clean, file = \"data/processed/weather_clean.csv\")",
     "crumbs": [
       "In-Class Activities",
-      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Cleaning SFO Weather Data</span>"
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Cleaning SFO Weather Data</span>"
     ]
   },
   {
@@ -105,7 +171,7 @@
     "text": "Read in the weather data in this file with the correct relative file path after you move it to the instructed location.\nThere is a variable that has values that don’t make sense in the data context. Figure out which variable this is and clean it up by making those values missing using na_if().\nCreate a variable called dateInYear that indicates the day of the year (1-365) for each case. (Jan 1 should be 1, and Dec 31 should be 365).\nCreate a variable called month_name that shows the 3-letter abbreviation for each case.\nSave the wrangled data to the data/processed/ folder using write_csv(). Name this file weather_clean.csv. Look up the documentation for this function by typing ?write_csv in the Console. You’ll need to write an appropriate relative path.",
     "crumbs": [
       "In-Class Activities",
-      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Cleaning SFO Weather Data</span>"
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Cleaning SFO Weather Data</span>"
     ]
   },
   {
@@ -116,7 +182,7 @@
     "text": "Add content here",
     "crumbs": [
       "Extras",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Extra Sample 1</span>"
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Extra Sample 1</span>"
     ]
   },
   {
@@ -127,7 +193,7 @@
     "text": "Add content here",
     "crumbs": [
       "Extras",
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Extra Sample 2</span>"
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Extra Sample 2</span>"
     ]
   }
 ]
