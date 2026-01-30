@@ -111,7 +111,7 @@ companies_clean %>%
   )
 ```
 
-I think it's interesting that micro and small caps are similarly capitalized, when adjusting for outliers. Clearly "other" which I interpret to be large caps in this case, have a much higher average capital stock and spread as well. 
+I think it's interesting that micro and small caps are similarly capitalized, when adjusting for outliers. Clearly "other" which I interpret to be large caps in this case, have a much higher average capital stock and spread as well.
 
 ## Visualization 2: Bar Chart with Mean and Median
 
@@ -163,4 +163,6 @@ This shows the mean and median of capital stock across company size, and it help
 Summary: 
 
 In short, there is a relationship between company size and capital stock, but only between the lower two categories and "other". In reality, other should be "large-enterprise" as that name more accurately reflects the companies it represents. 
+
+
 
