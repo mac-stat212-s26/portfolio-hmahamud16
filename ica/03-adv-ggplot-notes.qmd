@@ -72,6 +72,7 @@ Examine the [NYTimes 2015 Temperature Visualization (html)](https://www.nytimes.
     - The normal low and normal high, as well as axis which indicate the normal temperature and the record for that given day. 
 -   How do these variables map to aesthetics of the visual elements, eg, position, size, shape, and color of glyphs?
     - They map them in the form of bars for each individual day.
+    
 
 ## Exercise 2
 
@@ -129,10 +130,10 @@ The hex code of the used light tan color is `#ECEBE3`.
 ![SFO Weather Records in 2011](https://hash-mac.github.io/stat212site-sp26/images/sfo_first_graph.png)
 
 ```{r weather_plot_temp_records}
-ggplot(weather) +
-    theme_classic() +
-  aes(x = dateInYear) +
-  geom_linerange(x = RecordHigh, y = RecordLow)
+
+ggplot(weather, aes(x = dateInYear)) +
+  geom_linerange(aes(ymin = RecordLow, ymax = RecordHigh), color = "#ECEBE3", linewidth = 1) +
+  labs(title = "SFO Weather Ranges in 2011", y = "Value Range")
 ```
 
 ::: {.callout-tip title="Keyboard Shortcuts"}
@@ -153,7 +154,11 @@ The hex code of the color used for the usual temperatures is `"#C8B8BA"` and for
 ![SFO observed, Average, and Record Daily Temperatures in 2011](https://hash-mac.github.io/stat212site-sp26/images/sfo_second_graph.png)
 
 ```{r weather_plot_temp_all}
-
+ggplot(weather, aes(x = dateInYear)) +
+  geom_linerange(aes(ymin = RecordLow, ymax = RecordHigh), color = "#ECEBE3", linewidth = 1) +
+  geom_linerange(aes(ymin = NormalLow, ymax = NormalHigh), color = "#C8B8BA", linewidth = 1) +
+  geom_linerange(aes(ymin = Low, ymax = High), color = "#A90248", linewidth = 1) +
+  labs(title = "SFO Weather Ranges in 2011", y = "Value Range")
 
 ```
 
@@ -169,13 +174,53 @@ What `geom` might we use?
 What subset of the data might we use in that `geom` layer to draw lines only at the month divisions?
 
 ```{r }
+last_day_months <- weather |> 
+  group_by(Month) |> 
+  filter(Day == max(Day))
+```
 
+
+```{r }
+weather |> 
+ggplot(aes(x = dateInYear)) +
+  geom_linerange(aes(ymin = RecordLow, ymax = RecordHigh), color = "#ECEBE3", linewidth = 1) +
+  geom_linerange(aes(ymin = NormalLow, ymax = NormalHigh), color = "#C8B8BA", linewidth = 1) +
+  geom_linerange(aes(ymin = Low, ymax = High), color = "#A90248", linewidth = 1) +
+  geom_vline(data = last_day_months,
+             aes(xintercept = dateInYear), 
+             color = "red", 
+             linetype = "dashed", 
+             size = 0.2) +
+  labs(title = "SFO Weather Ranges in 2011", y = "Value Range", x = "Month")
 
 ```
 
 ## Exercise 5
 
 Change the x-axis labels so that the month names display in the center of each month's slice of the plot.
+
+```{r}
+# Calculate midpoints for each month
+month_midpoints <- weather |>
+  group_by(Month) |>
+  summarize(midpoint = mean(dateInYear))
+
+weather |> 
+  ggplot(aes(x = dateInYear)) +
+  geom_linerange(aes(ymin = RecordLow, ymax = RecordHigh), color = "#ECEBE3", linewidth = 1) +
+  geom_linerange(aes(ymin = NormalLow, ymax = NormalHigh), color = "#C8B8BA", linewidth = 1) +
+  geom_linerange(aes(ymin = Low, ymax = High), color = "#A90248", linewidth = 1) +
+  geom_vline(data = last_day_months,
+             aes(xintercept = dateInYear), 
+             color = "red", 
+             linetype = "dashed", 
+             size = 0.2) +
+  scale_x_continuous(
+    breaks = month_midpoints$midpoint,
+    labels = month.abb
+  ) +
+  labs(title = "SFO Weather Ranges in 2011", y = "Value Range", x = "Month")
+```
 
 ::: {.callout-tip title="Month Names"}
 R has built-in variables called `month.abb` and `month.name` that contain abbreviated and full month names.
@@ -204,7 +249,9 @@ Note that
 ![SFO Precipitation in 2011](https://hash-mac.github.io/stat212site-sp26/images/sfo_third_graph.png)
 
 ```{r weather_plot_precip}
-
+weather |> 
+ggplot(aes(x = dateInYear, y = CulmPrec), fill = "#ebeae2") + 
+  geom_line(color = "#32a3d8",fill = "#ebeae2")
 ```
 
 ## Done!
