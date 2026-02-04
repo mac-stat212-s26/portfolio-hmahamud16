@@ -80,6 +80,7 @@ book:
       - ica/ica-sample2.qmd
       - ica/cleaning.qmd
       - ica/03-adv-ggplot-notes.qmd
+      - ica/04_adv_maps/04-adv-maps-1-notes.qmd
 
     - part: "Extras"
       chapters:

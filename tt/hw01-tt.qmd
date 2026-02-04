@@ -156,6 +156,12 @@ ggplot(summary_long, aes(x = reorder(company_size, -value),
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank()
   )
+
+ggsave("median_plot.png")
+```
+
+```{r}
+
 ```
 
 This shows the mean and median of capital stock across company size, and it helps with robustness as well. It does show that the medians of small and micro enterprises are essentially the same, and thus that although the mean for small are higher, it has mainly to do with a few higher earners. 
