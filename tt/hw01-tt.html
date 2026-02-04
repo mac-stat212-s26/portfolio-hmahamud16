@@ -415,6 +415,11 @@ cookieconsent.run({
   <a href="../ica/03-adv-ggplot-notes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3 Adv Data Viz</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../ica/04_adv_maps/04-adv-maps-1-notes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4 Adv Spatial Viz P1</span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -633,6 +638,8 @@ cookieconsent.run({
 </figure>
 </div>
 </div>
+<details class="code-fold"><summary>Code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">ggsave</span>(<span class="st">"median_plot.png"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <p>This shows the mean and median of capital stock across company size, and it helps with robustness as well. It does show that the medians of small and micro enterprises are essentially the same, and thus that although the mean for small are higher, it has mainly to do with a few higher earners.</p>
 <p>Summary:</p>
@@ -1120,173 +1127,178 @@ cookieconsent.run({
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">---</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="an">title:</span><span class="co"> "Homework 01"</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="an">author:</span><span class="co"> "Hamza Mahamud"</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="co">---</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a></span>
-<span id="cb8-6"><a href="#cb8-6"></a></span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="fu">## TidyTuesday Section</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a></span>
-<span id="cb8-9"><a href="#cb8-9"></a>Explore the week's <span class="co">[</span><span class="ot">TidyTuesday</span><span class="co">](https://github.com/rfordatascience/tidytuesday)</span> challenge. Develop a research question, then answer it through a short data story with <span class="co">[</span><span class="ot">effective visualization(s)</span><span class="co">]({{&lt; var effective-viz-url &gt;}})</span>.  Provide sufficient background for readers to grasp your narrative.</span>
-<span id="cb8-10"><a href="#cb8-10"></a></span>
-<span id="cb8-11"><a href="#cb8-11"></a>###This week's Tidy Tuesday is on Brazilian companies and their financial details. Particularly, I am looking to see whether there is a relationship between headcount and capitalization. </span>
-<span id="cb8-12"><a href="#cb8-12"></a></span>
-<span id="cb8-13"><a href="#cb8-13"></a>##I hypothesize that the higher the headcount of a company, the higher their capital stock will be. </span>
-<span id="cb8-14"><a href="#cb8-14"></a></span>
-<span id="cb8-15"><a href="#cb8-15"></a></span>
-<span id="cb8-16"><a href="#cb8-16"></a><span class="fu">## Load Libraries!</span></span>
-<span id="cb8-17"><a href="#cb8-17"></a></span>
-<span id="cb8-18"><a href="#cb8-18"></a><span class="in">```{r libraries}</span></span>
-<span id="cb8-19"><a href="#cb8-19"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb8-20"><a href="#cb8-20"></a><span class="fu">library</span>(scales)</span>
-<span id="cb8-21"><a href="#cb8-21"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb8-22"><a href="#cb8-22"></a><span class="fu">library</span>(viridis)</span>
-<span id="cb8-23"><a href="#cb8-23"></a></span>
-<span id="cb8-24"><a href="#cb8-24"></a><span class="co"># Set theme</span></span>
-<span id="cb8-25"><a href="#cb8-25"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>))</span>
-<span id="cb8-26"><a href="#cb8-26"></a><span class="in">```</span></span>
-<span id="cb8-27"><a href="#cb8-27"></a></span>
-<span id="cb8-28"><a href="#cb8-28"></a><span class="fu"># Load the data from GitHub</span></span>
-<span id="cb8-29"><a href="#cb8-29"></a></span>
-<span id="cb8-32"><a href="#cb8-32"></a><span class="in">```{r}</span></span>
-<span id="cb8-33"><a href="#cb8-33"></a>companies <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/companies.csv'</span>)</span>
-<span id="cb8-34"><a href="#cb8-34"></a>legal_nature <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/legal_nature.csv'</span>)</span>
-<span id="cb8-35"><a href="#cb8-35"></a>qualifications <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/qualifications.csv'</span>)</span>
-<span id="cb8-36"><a href="#cb8-36"></a>size <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/size.csv'</span>)</span>
-<span id="cb8-37"><a href="#cb8-37"></a></span>
-<span id="cb8-38"><a href="#cb8-38"></a><span class="in">```</span></span>
-<span id="cb8-39"><a href="#cb8-39"></a></span>
-<span id="cb8-40"><a href="#cb8-40"></a></span>
-<span id="cb8-41"><a href="#cb8-41"></a><span class="fu">## Data Cleaning: Remove Outliers Using IQR Method</span></span>
-<span id="cb8-42"><a href="#cb8-42"></a></span>
-<span id="cb8-43"><a href="#cb8-43"></a>I used the IQR (Interquartile Range) method with a 1.5 × IQR threshold to identify and remove outliers from the capital_stock variable. This is a standard marker used to remove extreme outliers and standardize variables to analyze.</span>
-<span id="cb8-44"><a href="#cb8-44"></a></span>
-<span id="cb8-45"><a href="#cb8-45"></a><span class="in">```{r outlier-removal}</span></span>
-<span id="cb8-46"><a href="#cb8-46"></a><span class="co"># Calculate IQR boundaries</span></span>
-<span id="cb8-47"><a href="#cb8-47"></a>Q1 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(companies<span class="sc">$</span>capital_stock, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-48"><a href="#cb8-48"></a>Q3 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(companies<span class="sc">$</span>capital_stock, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-49"><a href="#cb8-49"></a>IQR_value <span class="ot">&lt;-</span> Q3 <span class="sc">-</span> Q1</span>
-<span id="cb8-50"><a href="#cb8-50"></a></span>
-<span id="cb8-51"><a href="#cb8-51"></a><span class="co"># Define outlier boundaries</span></span>
-<span id="cb8-52"><a href="#cb8-52"></a>lower_bound <span class="ot">&lt;-</span> Q1 <span class="sc">-</span> <span class="fl">1.5</span> <span class="sc">*</span> IQR_value</span>
-<span id="cb8-53"><a href="#cb8-53"></a>upper_bound <span class="ot">&lt;-</span> Q3 <span class="sc">+</span> <span class="fl">1.5</span> <span class="sc">*</span> IQR_value</span>
-<span id="cb8-54"><a href="#cb8-54"></a></span>
-<span id="cb8-55"><a href="#cb8-55"></a><span class="co"># Count outliers</span></span>
-<span id="cb8-56"><a href="#cb8-56"></a>n_outliers <span class="ot">&lt;-</span> <span class="fu">sum</span>(companies<span class="sc">$</span>capital_stock <span class="sc">&lt;</span> lower_bound <span class="sc">|</span></span>
-<span id="cb8-57"><a href="#cb8-57"></a>                  companies<span class="sc">$</span>capital_stock <span class="sc">&gt;</span> upper_bound, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-58"><a href="#cb8-58"></a></span>
-<span id="cb8-59"><a href="#cb8-59"></a><span class="co"># Remove outliers</span></span>
-<span id="cb8-60"><a href="#cb8-60"></a>companies_clean <span class="ot">&lt;-</span> companies <span class="sc">%&gt;%</span></span>
-<span id="cb8-61"><a href="#cb8-61"></a>  <span class="fu">filter</span>(capital_stock <span class="sc">&gt;=</span> lower_bound <span class="sc">&amp;</span> capital_stock <span class="sc">&lt;=</span> upper_bound)</span>
-<span id="cb8-62"><a href="#cb8-62"></a></span>
-<span id="cb8-63"><a href="#cb8-63"></a><span class="in">```</span></span>
-<span id="cb8-64"><a href="#cb8-64"></a></span>
-<span id="cb8-65"><a href="#cb8-65"></a><span class="fu">## Summary Statistics by Company Size</span></span>
-<span id="cb8-66"><a href="#cb8-66"></a></span>
-<span id="cb8-67"><a href="#cb8-67"></a>I also wanted to get a glimpse of the averages and standard deviations before continuing on to making visualizations. </span>
-<span id="cb8-68"><a href="#cb8-68"></a></span>
-<span id="cb8-69"><a href="#cb8-69"></a><span class="in">```{r summary-stats}</span></span>
-<span id="cb8-70"><a href="#cb8-70"></a><span class="co"># Calculate summary statistics</span></span>
-<span id="cb8-71"><a href="#cb8-71"></a>summary_stats <span class="ot">&lt;-</span> companies_clean <span class="sc">%&gt;%</span></span>
-<span id="cb8-72"><a href="#cb8-72"></a>  <span class="fu">group_by</span>(company_size) <span class="sc">%&gt;%</span></span>
-<span id="cb8-73"><a href="#cb8-73"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb8-74"><a href="#cb8-74"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb8-75"><a href="#cb8-75"></a>    <span class="at">mean_capital =</span> <span class="fu">mean</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-76"><a href="#cb8-76"></a>    <span class="at">median_capital =</span> <span class="fu">median</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-77"><a href="#cb8-77"></a>    <span class="at">sd_capital =</span> <span class="fu">sd</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-78"><a href="#cb8-78"></a>    <span class="at">min_capital =</span> <span class="fu">min</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-79"><a href="#cb8-79"></a>    <span class="at">max_capital =</span> <span class="fu">max</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-80"><a href="#cb8-80"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb8-81"><a href="#cb8-81"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(median_capital))</span>
-<span id="cb8-82"><a href="#cb8-82"></a></span>
-<span id="cb8-83"><a href="#cb8-83"></a><span class="fu">print</span>(summary_stats)</span>
-<span id="cb8-84"><a href="#cb8-84"></a><span class="in">```</span></span>
-<span id="cb8-85"><a href="#cb8-85"></a></span>
-<span id="cb8-86"><a href="#cb8-86"></a><span class="fu">## Visualization 1: Box Plot by Company Size</span></span>
-<span id="cb8-87"><a href="#cb8-87"></a></span>
-<span id="cb8-88"><a href="#cb8-88"></a></span>
-<span id="cb8-89"><a href="#cb8-89"></a><span class="in">```{r boxplot, fig.height=7}</span></span>
-<span id="cb8-90"><a href="#cb8-90"></a>companies_clean <span class="sc">%&gt;%</span></span>
-<span id="cb8-91"><a href="#cb8-91"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(company_size, capital_stock, <span class="at">FUN =</span> median),</span>
-<span id="cb8-92"><a href="#cb8-92"></a>             <span class="at">y =</span> capital_stock,</span>
-<span id="cb8-93"><a href="#cb8-93"></a>             <span class="at">fill =</span> company_size)) <span class="sc">+</span></span>
-<span id="cb8-94"><a href="#cb8-94"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">outlier.shape =</span> <span class="dv">21</span>, <span class="at">outlier.size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb8-95"><a href="#cb8-95"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">dollar_format</span>(<span class="at">prefix =</span> <span class="st">"R$"</span>, <span class="at">scale =</span> <span class="fl">1e-6</span>, <span class="at">suffix =</span> <span class="st">"M"</span>),</span>
-<span id="cb8-96"><a href="#cb8-96"></a>                     <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(companies_clean<span class="sc">$</span>capital_stock), <span class="at">by =</span> <span class="dv">500000</span>)) <span class="sc">+</span></span>
-<span id="cb8-97"><a href="#cb8-97"></a>  <span class="fu">scale_fill_viridis_d</span>(<span class="at">option =</span> <span class="st">"plasma"</span>, <span class="at">begin =</span> <span class="fl">0.2</span>, <span class="at">end =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb8-98"><a href="#cb8-98"></a>  <span class="fu">labs</span>(</span>
-<span id="cb8-99"><a href="#cb8-99"></a>    <span class="at">title =</span> <span class="st">"Capital Stock Distribution by Company Size"</span>,</span>
-<span id="cb8-100"><a href="#cb8-100"></a>    <span class="at">subtitle =</span> <span class="st">"After removing outliers using IQR method (1.5 × IQR)"</span>,</span>
-<span id="cb8-101"><a href="#cb8-101"></a>    <span class="at">x =</span> <span class="st">"Company Size"</span>,</span>
-<span id="cb8-102"><a href="#cb8-102"></a>    <span class="at">y =</span> <span class="st">"Capital Stock (R$ Millions)"</span>,</span>
-<span id="cb8-103"><a href="#cb8-103"></a>    <span class="at">fill =</span> <span class="st">"Company Size"</span>,</span>
-<span id="cb8-104"><a href="#cb8-104"></a>    <span class="at">caption =</span> <span class="st">"Data: Tidy Tuesday | Outliers removed using IQR method"</span></span>
-<span id="cb8-105"><a href="#cb8-105"></a>  ) <span class="sc">+</span></span>
-<span id="cb8-106"><a href="#cb8-106"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb8-107"><a href="#cb8-107"></a>  <span class="fu">theme</span>(</span>
-<span id="cb8-108"><a href="#cb8-108"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
-<span id="cb8-109"><a href="#cb8-109"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"gray40"</span>),</span>
-<span id="cb8-110"><a href="#cb8-110"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb8-111"><a href="#cb8-111"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb8-112"><a href="#cb8-112"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb8-113"><a href="#cb8-113"></a>  )</span>
-<span id="cb8-114"><a href="#cb8-114"></a><span class="in">```</span></span>
-<span id="cb8-115"><a href="#cb8-115"></a></span>
-<span id="cb8-116"><a href="#cb8-116"></a>I think it's interesting that micro and small caps are similarly capitalized, when adjusting for outliers. Clearly "other" which I interpret to be large caps in this case, have a much higher average capital stock and spread as well.</span>
-<span id="cb8-117"><a href="#cb8-117"></a></span>
-<span id="cb8-118"><a href="#cb8-118"></a><span class="fu">## Visualization 2: Bar Chart with Mean and Median</span></span>
-<span id="cb8-119"><a href="#cb8-119"></a></span>
-<span id="cb8-120"><a href="#cb8-120"></a>Bar charts comparing both mean and median capital stock across company size categories to show central tendency.</span>
-<span id="cb8-121"><a href="#cb8-121"></a></span>
-<span id="cb8-122"><a href="#cb8-122"></a><span class="in">```{r barchart, fig.height=7}</span></span>
-<span id="cb8-123"><a href="#cb8-123"></a><span class="co"># Prepare data for plotting</span></span>
-<span id="cb8-124"><a href="#cb8-124"></a>summary_long <span class="ot">&lt;-</span> summary_stats <span class="sc">%&gt;%</span></span>
-<span id="cb8-125"><a href="#cb8-125"></a>  <span class="fu">select</span>(company_size, mean_capital, median_capital) <span class="sc">%&gt;%</span></span>
-<span id="cb8-126"><a href="#cb8-126"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(mean_capital, median_capital),</span>
-<span id="cb8-127"><a href="#cb8-127"></a>               <span class="at">names_to =</span> <span class="st">"statistic"</span>,</span>
-<span id="cb8-128"><a href="#cb8-128"></a>               <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-129"><a href="#cb8-129"></a>  <span class="fu">mutate</span>(<span class="at">statistic =</span> <span class="fu">recode</span>(statistic,</span>
-<span id="cb8-130"><a href="#cb8-130"></a>                           <span class="st">"mean_capital"</span> <span class="ot">=</span> <span class="st">"Mean"</span>,</span>
-<span id="cb8-131"><a href="#cb8-131"></a>                           <span class="st">"median_capital"</span> <span class="ot">=</span> <span class="st">"Median"</span>))</span>
-<span id="cb8-132"><a href="#cb8-132"></a></span>
-<span id="cb8-133"><a href="#cb8-133"></a><span class="co"># Create bar chart</span></span>
-<span id="cb8-134"><a href="#cb8-134"></a><span class="fu">ggplot</span>(summary_long, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(company_size, <span class="sc">-</span>value),</span>
-<span id="cb8-135"><a href="#cb8-135"></a>                         <span class="at">y =</span> value,</span>
-<span id="cb8-136"><a href="#cb8-136"></a>                         <span class="at">fill =</span> statistic)) <span class="sc">+</span></span>
-<span id="cb8-137"><a href="#cb8-137"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb8-138"><a href="#cb8-138"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"R$"</span>, <span class="fu">round</span>(value<span class="sc">/</span><span class="fl">1e6</span>, <span class="dv">1</span>), <span class="st">"M"</span>)),</span>
-<span id="cb8-139"><a href="#cb8-139"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.7</span>),</span>
-<span id="cb8-140"><a href="#cb8-140"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
-<span id="cb8-141"><a href="#cb8-141"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">dollar_format</span>(<span class="at">prefix =</span> <span class="st">"R$"</span>, <span class="at">scale =</span> <span class="fl">1e-6</span>, <span class="at">suffix =</span> <span class="st">"M"</span>),</span>
-<span id="cb8-142"><a href="#cb8-142"></a>                     <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.15</span>))) <span class="sc">+</span></span>
-<span id="cb8-143"><a href="#cb8-143"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Mean"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Median"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>)) <span class="sc">+</span></span>
-<span id="cb8-144"><a href="#cb8-144"></a>  <span class="fu">labs</span>(</span>
-<span id="cb8-145"><a href="#cb8-145"></a>    <span class="at">title =</span> <span class="st">"Mean vs Median Capital Stock by Company Size"</span>,</span>
-<span id="cb8-146"><a href="#cb8-146"></a>    <span class="at">subtitle =</span> <span class="st">"Comparing central tendency measures across company size categories"</span>,</span>
-<span id="cb8-147"><a href="#cb8-147"></a>    <span class="at">x =</span> <span class="st">"Company Size"</span>,</span>
-<span id="cb8-148"><a href="#cb8-148"></a>    <span class="at">y =</span> <span class="st">"Capital Stock (R$ Millions)"</span>,</span>
-<span id="cb8-149"><a href="#cb8-149"></a>    <span class="at">fill =</span> <span class="st">"Statistic"</span>,</span>
-<span id="cb8-150"><a href="#cb8-150"></a>    <span class="at">caption =</span> <span class="st">"Mean is more sensitive to extreme values; Median is more robust"</span></span>
-<span id="cb8-151"><a href="#cb8-151"></a>  ) <span class="sc">+</span></span>
-<span id="cb8-152"><a href="#cb8-152"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb8-153"><a href="#cb8-153"></a>  <span class="fu">theme</span>(</span>
-<span id="cb8-154"><a href="#cb8-154"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
-<span id="cb8-155"><a href="#cb8-155"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"gray40"</span>),</span>
-<span id="cb8-156"><a href="#cb8-156"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb8-157"><a href="#cb8-157"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
-<span id="cb8-158"><a href="#cb8-158"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb8-159"><a href="#cb8-159"></a>    <span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb8-160"><a href="#cb8-160"></a>  )</span>
-<span id="cb8-161"><a href="#cb8-161"></a><span class="in">```</span></span>
-<span id="cb8-162"><a href="#cb8-162"></a></span>
-<span id="cb8-163"><a href="#cb8-163"></a>This shows the mean and median of capital stock across company size, and it helps with robustness as well. It does show that the medians of small and micro enterprises are essentially the same, and thus that although the mean for small are higher, it has mainly to do with a few higher earners. </span>
-<span id="cb8-164"><a href="#cb8-164"></a></span>
-<span id="cb8-165"><a href="#cb8-165"></a>Summary: </span>
-<span id="cb8-166"><a href="#cb8-166"></a></span>
-<span id="cb8-167"><a href="#cb8-167"></a>In short, there is a relationship between company size and capital stock, but only between the lower two categories and "other". In reality, other should be "large-enterprise" as that name more accurately reflects the companies it represents. </span>
-<span id="cb8-168"><a href="#cb8-168"></a></span>
-<span id="cb8-169"><a href="#cb8-169"></a></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">---</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="an">title:</span><span class="co"> "Homework 01"</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="an">author:</span><span class="co"> "Hamza Mahamud"</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="co">---</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a></span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="fu">## TidyTuesday Section</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a>Explore the week's <span class="co">[</span><span class="ot">TidyTuesday</span><span class="co">](https://github.com/rfordatascience/tidytuesday)</span> challenge. Develop a research question, then answer it through a short data story with <span class="co">[</span><span class="ot">effective visualization(s)</span><span class="co">]({{&lt; var effective-viz-url &gt;}})</span>.  Provide sufficient background for readers to grasp your narrative.</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a>###This week's Tidy Tuesday is on Brazilian companies and their financial details. Particularly, I am looking to see whether there is a relationship between headcount and capitalization. </span>
+<span id="cb9-12"><a href="#cb9-12"></a></span>
+<span id="cb9-13"><a href="#cb9-13"></a>##I hypothesize that the higher the headcount of a company, the higher their capital stock will be. </span>
+<span id="cb9-14"><a href="#cb9-14"></a></span>
+<span id="cb9-15"><a href="#cb9-15"></a></span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="fu">## Load Libraries!</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a></span>
+<span id="cb9-18"><a href="#cb9-18"></a><span class="in">```{r libraries}</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb9-20"><a href="#cb9-20"></a><span class="fu">library</span>(scales)</span>
+<span id="cb9-21"><a href="#cb9-21"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb9-22"><a href="#cb9-22"></a><span class="fu">library</span>(viridis)</span>
+<span id="cb9-23"><a href="#cb9-23"></a></span>
+<span id="cb9-24"><a href="#cb9-24"></a><span class="co"># Set theme</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>))</span>
+<span id="cb9-26"><a href="#cb9-26"></a><span class="in">```</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a></span>
+<span id="cb9-28"><a href="#cb9-28"></a><span class="fu"># Load the data from GitHub</span></span>
+<span id="cb9-29"><a href="#cb9-29"></a></span>
+<span id="cb9-32"><a href="#cb9-32"></a><span class="in">```{r}</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a>companies <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/companies.csv'</span>)</span>
+<span id="cb9-34"><a href="#cb9-34"></a>legal_nature <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/legal_nature.csv'</span>)</span>
+<span id="cb9-35"><a href="#cb9-35"></a>qualifications <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/qualifications.csv'</span>)</span>
+<span id="cb9-36"><a href="#cb9-36"></a>size <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-01-27/size.csv'</span>)</span>
+<span id="cb9-37"><a href="#cb9-37"></a></span>
+<span id="cb9-38"><a href="#cb9-38"></a><span class="in">```</span></span>
+<span id="cb9-39"><a href="#cb9-39"></a></span>
+<span id="cb9-40"><a href="#cb9-40"></a></span>
+<span id="cb9-41"><a href="#cb9-41"></a><span class="fu">## Data Cleaning: Remove Outliers Using IQR Method</span></span>
+<span id="cb9-42"><a href="#cb9-42"></a></span>
+<span id="cb9-43"><a href="#cb9-43"></a>I used the IQR (Interquartile Range) method with a 1.5 × IQR threshold to identify and remove outliers from the capital_stock variable. This is a standard marker used to remove extreme outliers and standardize variables to analyze.</span>
+<span id="cb9-44"><a href="#cb9-44"></a></span>
+<span id="cb9-45"><a href="#cb9-45"></a><span class="in">```{r outlier-removal}</span></span>
+<span id="cb9-46"><a href="#cb9-46"></a><span class="co"># Calculate IQR boundaries</span></span>
+<span id="cb9-47"><a href="#cb9-47"></a>Q1 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(companies<span class="sc">$</span>capital_stock, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-48"><a href="#cb9-48"></a>Q3 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(companies<span class="sc">$</span>capital_stock, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-49"><a href="#cb9-49"></a>IQR_value <span class="ot">&lt;-</span> Q3 <span class="sc">-</span> Q1</span>
+<span id="cb9-50"><a href="#cb9-50"></a></span>
+<span id="cb9-51"><a href="#cb9-51"></a><span class="co"># Define outlier boundaries</span></span>
+<span id="cb9-52"><a href="#cb9-52"></a>lower_bound <span class="ot">&lt;-</span> Q1 <span class="sc">-</span> <span class="fl">1.5</span> <span class="sc">*</span> IQR_value</span>
+<span id="cb9-53"><a href="#cb9-53"></a>upper_bound <span class="ot">&lt;-</span> Q3 <span class="sc">+</span> <span class="fl">1.5</span> <span class="sc">*</span> IQR_value</span>
+<span id="cb9-54"><a href="#cb9-54"></a></span>
+<span id="cb9-55"><a href="#cb9-55"></a><span class="co"># Count outliers</span></span>
+<span id="cb9-56"><a href="#cb9-56"></a>n_outliers <span class="ot">&lt;-</span> <span class="fu">sum</span>(companies<span class="sc">$</span>capital_stock <span class="sc">&lt;</span> lower_bound <span class="sc">|</span></span>
+<span id="cb9-57"><a href="#cb9-57"></a>                  companies<span class="sc">$</span>capital_stock <span class="sc">&gt;</span> upper_bound, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-58"><a href="#cb9-58"></a></span>
+<span id="cb9-59"><a href="#cb9-59"></a><span class="co"># Remove outliers</span></span>
+<span id="cb9-60"><a href="#cb9-60"></a>companies_clean <span class="ot">&lt;-</span> companies <span class="sc">%&gt;%</span></span>
+<span id="cb9-61"><a href="#cb9-61"></a>  <span class="fu">filter</span>(capital_stock <span class="sc">&gt;=</span> lower_bound <span class="sc">&amp;</span> capital_stock <span class="sc">&lt;=</span> upper_bound)</span>
+<span id="cb9-62"><a href="#cb9-62"></a></span>
+<span id="cb9-63"><a href="#cb9-63"></a><span class="in">```</span></span>
+<span id="cb9-64"><a href="#cb9-64"></a></span>
+<span id="cb9-65"><a href="#cb9-65"></a><span class="fu">## Summary Statistics by Company Size</span></span>
+<span id="cb9-66"><a href="#cb9-66"></a></span>
+<span id="cb9-67"><a href="#cb9-67"></a>I also wanted to get a glimpse of the averages and standard deviations before continuing on to making visualizations. </span>
+<span id="cb9-68"><a href="#cb9-68"></a></span>
+<span id="cb9-69"><a href="#cb9-69"></a><span class="in">```{r summary-stats}</span></span>
+<span id="cb9-70"><a href="#cb9-70"></a><span class="co"># Calculate summary statistics</span></span>
+<span id="cb9-71"><a href="#cb9-71"></a>summary_stats <span class="ot">&lt;-</span> companies_clean <span class="sc">%&gt;%</span></span>
+<span id="cb9-72"><a href="#cb9-72"></a>  <span class="fu">group_by</span>(company_size) <span class="sc">%&gt;%</span></span>
+<span id="cb9-73"><a href="#cb9-73"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb9-74"><a href="#cb9-74"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb9-75"><a href="#cb9-75"></a>    <span class="at">mean_capital =</span> <span class="fu">mean</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-76"><a href="#cb9-76"></a>    <span class="at">median_capital =</span> <span class="fu">median</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-77"><a href="#cb9-77"></a>    <span class="at">sd_capital =</span> <span class="fu">sd</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-78"><a href="#cb9-78"></a>    <span class="at">min_capital =</span> <span class="fu">min</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-79"><a href="#cb9-79"></a>    <span class="at">max_capital =</span> <span class="fu">max</span>(capital_stock, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-80"><a href="#cb9-80"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-81"><a href="#cb9-81"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(median_capital))</span>
+<span id="cb9-82"><a href="#cb9-82"></a></span>
+<span id="cb9-83"><a href="#cb9-83"></a><span class="fu">print</span>(summary_stats)</span>
+<span id="cb9-84"><a href="#cb9-84"></a><span class="in">```</span></span>
+<span id="cb9-85"><a href="#cb9-85"></a></span>
+<span id="cb9-86"><a href="#cb9-86"></a><span class="fu">## Visualization 1: Box Plot by Company Size</span></span>
+<span id="cb9-87"><a href="#cb9-87"></a></span>
+<span id="cb9-88"><a href="#cb9-88"></a></span>
+<span id="cb9-89"><a href="#cb9-89"></a><span class="in">```{r boxplot, fig.height=7}</span></span>
+<span id="cb9-90"><a href="#cb9-90"></a>companies_clean <span class="sc">%&gt;%</span></span>
+<span id="cb9-91"><a href="#cb9-91"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(company_size, capital_stock, <span class="at">FUN =</span> median),</span>
+<span id="cb9-92"><a href="#cb9-92"></a>             <span class="at">y =</span> capital_stock,</span>
+<span id="cb9-93"><a href="#cb9-93"></a>             <span class="at">fill =</span> company_size)) <span class="sc">+</span></span>
+<span id="cb9-94"><a href="#cb9-94"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">outlier.shape =</span> <span class="dv">21</span>, <span class="at">outlier.size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-95"><a href="#cb9-95"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">dollar_format</span>(<span class="at">prefix =</span> <span class="st">"R$"</span>, <span class="at">scale =</span> <span class="fl">1e-6</span>, <span class="at">suffix =</span> <span class="st">"M"</span>),</span>
+<span id="cb9-96"><a href="#cb9-96"></a>                     <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(companies_clean<span class="sc">$</span>capital_stock), <span class="at">by =</span> <span class="dv">500000</span>)) <span class="sc">+</span></span>
+<span id="cb9-97"><a href="#cb9-97"></a>  <span class="fu">scale_fill_viridis_d</span>(<span class="at">option =</span> <span class="st">"plasma"</span>, <span class="at">begin =</span> <span class="fl">0.2</span>, <span class="at">end =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb9-98"><a href="#cb9-98"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-99"><a href="#cb9-99"></a>    <span class="at">title =</span> <span class="st">"Capital Stock Distribution by Company Size"</span>,</span>
+<span id="cb9-100"><a href="#cb9-100"></a>    <span class="at">subtitle =</span> <span class="st">"After removing outliers using IQR method (1.5 × IQR)"</span>,</span>
+<span id="cb9-101"><a href="#cb9-101"></a>    <span class="at">x =</span> <span class="st">"Company Size"</span>,</span>
+<span id="cb9-102"><a href="#cb9-102"></a>    <span class="at">y =</span> <span class="st">"Capital Stock (R$ Millions)"</span>,</span>
+<span id="cb9-103"><a href="#cb9-103"></a>    <span class="at">fill =</span> <span class="st">"Company Size"</span>,</span>
+<span id="cb9-104"><a href="#cb9-104"></a>    <span class="at">caption =</span> <span class="st">"Data: Tidy Tuesday | Outliers removed using IQR method"</span></span>
+<span id="cb9-105"><a href="#cb9-105"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-106"><a href="#cb9-106"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb9-107"><a href="#cb9-107"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-108"><a href="#cb9-108"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb9-109"><a href="#cb9-109"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"gray40"</span>),</span>
+<span id="cb9-110"><a href="#cb9-110"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
+<span id="cb9-111"><a href="#cb9-111"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb9-112"><a href="#cb9-112"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb9-113"><a href="#cb9-113"></a>  )</span>
+<span id="cb9-114"><a href="#cb9-114"></a><span class="in">```</span></span>
+<span id="cb9-115"><a href="#cb9-115"></a></span>
+<span id="cb9-116"><a href="#cb9-116"></a>I think it's interesting that micro and small caps are similarly capitalized, when adjusting for outliers. Clearly "other" which I interpret to be large caps in this case, have a much higher average capital stock and spread as well.</span>
+<span id="cb9-117"><a href="#cb9-117"></a></span>
+<span id="cb9-118"><a href="#cb9-118"></a><span class="fu">## Visualization 2: Bar Chart with Mean and Median</span></span>
+<span id="cb9-119"><a href="#cb9-119"></a></span>
+<span id="cb9-120"><a href="#cb9-120"></a>Bar charts comparing both mean and median capital stock across company size categories to show central tendency.</span>
+<span id="cb9-121"><a href="#cb9-121"></a></span>
+<span id="cb9-122"><a href="#cb9-122"></a><span class="in">```{r barchart, fig.height=7}</span></span>
+<span id="cb9-123"><a href="#cb9-123"></a><span class="co"># Prepare data for plotting</span></span>
+<span id="cb9-124"><a href="#cb9-124"></a>summary_long <span class="ot">&lt;-</span> summary_stats <span class="sc">%&gt;%</span></span>
+<span id="cb9-125"><a href="#cb9-125"></a>  <span class="fu">select</span>(company_size, mean_capital, median_capital) <span class="sc">%&gt;%</span></span>
+<span id="cb9-126"><a href="#cb9-126"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(mean_capital, median_capital),</span>
+<span id="cb9-127"><a href="#cb9-127"></a>               <span class="at">names_to =</span> <span class="st">"statistic"</span>,</span>
+<span id="cb9-128"><a href="#cb9-128"></a>               <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-129"><a href="#cb9-129"></a>  <span class="fu">mutate</span>(<span class="at">statistic =</span> <span class="fu">recode</span>(statistic,</span>
+<span id="cb9-130"><a href="#cb9-130"></a>                           <span class="st">"mean_capital"</span> <span class="ot">=</span> <span class="st">"Mean"</span>,</span>
+<span id="cb9-131"><a href="#cb9-131"></a>                           <span class="st">"median_capital"</span> <span class="ot">=</span> <span class="st">"Median"</span>))</span>
+<span id="cb9-132"><a href="#cb9-132"></a></span>
+<span id="cb9-133"><a href="#cb9-133"></a><span class="co"># Create bar chart</span></span>
+<span id="cb9-134"><a href="#cb9-134"></a><span class="fu">ggplot</span>(summary_long, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(company_size, <span class="sc">-</span>value),</span>
+<span id="cb9-135"><a href="#cb9-135"></a>                         <span class="at">y =</span> value,</span>
+<span id="cb9-136"><a href="#cb9-136"></a>                         <span class="at">fill =</span> statistic)) <span class="sc">+</span></span>
+<span id="cb9-137"><a href="#cb9-137"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb9-138"><a href="#cb9-138"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"R$"</span>, <span class="fu">round</span>(value<span class="sc">/</span><span class="fl">1e6</span>, <span class="dv">1</span>), <span class="st">"M"</span>)),</span>
+<span id="cb9-139"><a href="#cb9-139"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.7</span>),</span>
+<span id="cb9-140"><a href="#cb9-140"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb9-141"><a href="#cb9-141"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">dollar_format</span>(<span class="at">prefix =</span> <span class="st">"R$"</span>, <span class="at">scale =</span> <span class="fl">1e-6</span>, <span class="at">suffix =</span> <span class="st">"M"</span>),</span>
+<span id="cb9-142"><a href="#cb9-142"></a>                     <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.15</span>))) <span class="sc">+</span></span>
+<span id="cb9-143"><a href="#cb9-143"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Mean"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Median"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>)) <span class="sc">+</span></span>
+<span id="cb9-144"><a href="#cb9-144"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-145"><a href="#cb9-145"></a>    <span class="at">title =</span> <span class="st">"Mean vs Median Capital Stock by Company Size"</span>,</span>
+<span id="cb9-146"><a href="#cb9-146"></a>    <span class="at">subtitle =</span> <span class="st">"Comparing central tendency measures across company size categories"</span>,</span>
+<span id="cb9-147"><a href="#cb9-147"></a>    <span class="at">x =</span> <span class="st">"Company Size"</span>,</span>
+<span id="cb9-148"><a href="#cb9-148"></a>    <span class="at">y =</span> <span class="st">"Capital Stock (R$ Millions)"</span>,</span>
+<span id="cb9-149"><a href="#cb9-149"></a>    <span class="at">fill =</span> <span class="st">"Statistic"</span>,</span>
+<span id="cb9-150"><a href="#cb9-150"></a>    <span class="at">caption =</span> <span class="st">"Mean is more sensitive to extreme values; Median is more robust"</span></span>
+<span id="cb9-151"><a href="#cb9-151"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-152"><a href="#cb9-152"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb9-153"><a href="#cb9-153"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-154"><a href="#cb9-154"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb9-155"><a href="#cb9-155"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"gray40"</span>),</span>
+<span id="cb9-156"><a href="#cb9-156"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
+<span id="cb9-157"><a href="#cb9-157"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb9-158"><a href="#cb9-158"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb9-159"><a href="#cb9-159"></a>    <span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb9-160"><a href="#cb9-160"></a>  )</span>
+<span id="cb9-161"><a href="#cb9-161"></a></span>
+<span id="cb9-162"><a href="#cb9-162"></a><span class="fu">ggsave</span>(<span class="st">"median_plot.png"</span>)</span>
+<span id="cb9-163"><a href="#cb9-163"></a><span class="in">```</span></span>
+<span id="cb9-164"><a href="#cb9-164"></a></span>
+<span id="cb9-167"><a href="#cb9-167"></a><span class="in">```{r}</span></span>
+<span id="cb9-168"><a href="#cb9-168"></a><span class="in">```</span></span>
+<span id="cb9-169"><a href="#cb9-169"></a></span>
+<span id="cb9-170"><a href="#cb9-170"></a>This shows the mean and median of capital stock across company size, and it helps with robustness as well. It does show that the medians of small and micro enterprises are essentially the same, and thus that although the mean for small are higher, it has mainly to do with a few higher earners. </span>
+<span id="cb9-171"><a href="#cb9-171"></a></span>
+<span id="cb9-172"><a href="#cb9-172"></a>Summary: </span>
+<span id="cb9-173"><a href="#cb9-173"></a></span>
+<span id="cb9-174"><a href="#cb9-174"></a>In short, there is a relationship between company size and capital stock, but only between the lower two categories and "other". In reality, other should be "large-enterprise" as that name more accurately reflects the companies it represents. </span>
+<span id="cb9-175"><a href="#cb9-175"></a></span>
+<span id="cb9-176"><a href="#cb9-176"></a></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
