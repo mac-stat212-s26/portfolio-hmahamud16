@@ -1,5 +1,6 @@
 ---
 title: "10 Base R"
+author: "Hamza Mahamud"
 ---
 
 ## 🧩 Learning Goals
@@ -17,6 +18,9 @@ By the end of this lesson, you should be able to:
 
 **Vector**: A vector is a **collection of elements** of the **same type** (e.g., numeric, integer, character, logical).
 
+```{r}
+library(tidyverse)
+```
 
 
 ```{r}
