@@ -17,7 +17,7 @@ Ex 1
 Ex 2
 
 - Write a description of what `httr_attr()` does
-- Include a code example to demonstrate what it does
+- Include a code example to demonstrate what it does to it
 
 Ex 3
 
