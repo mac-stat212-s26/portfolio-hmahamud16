@@ -1,5 +1,6 @@
 ---
 title: "11 Loops+Iter I"
+author: "Hamza Mahamud"
 ---
 
 
@@ -45,6 +46,10 @@ Let's talk about iteration in R.
 - Ex: saving data using `write_csv()` or saving a plot with `png()`
 - We don't need to worry about storage in R.
 - We could use `walk()` for this...
+
+```{r}
+library(tidyverse)
+```
 
 
 
@@ -156,13 +161,16 @@ If you don't create a storage container ahead of time, you will regret it. Let's
 
 ```{r}
 # Example 1: No storage container; append new value to existing vector
-x <- integer()
-bench::mark(
-  for (i in 1:1e5) {
-    x <- c(x, i)
-  }
-)
+#x <- integer()
+#bench::mark(
+#  for (i in 1:1e5) {
+#    x <- c(x, i)
+#  }
+#)
+```
 
+
+```{r}
 # Example 2: Using a storage container!
 #Notice median (time to run), mem_alloc (how much memory you are using), and gc (garbage collection)
 x <- vector('integer', length = 1e5)
@@ -171,8 +179,10 @@ bench::mark(
     x[i] <- i
   }
 )
+```
 
 
+```{r}
 # Example 3: Vectorized function
 #Notice median (time to run), mem_alloc (how much memory you are using), and gc (garbage collection)
 bench::mark(
@@ -190,34 +200,47 @@ Write `for`-loops that do each of the following:
 1. Prints the even numbers from 2:20
     - Then, produce the same output with the `seq()` function
     
-```{r}    
+```{r}
 # for loop
-
-
+for (i in 2:20) {
+    if (i %% 2 == 0) {
+        print(i)
+    }
+}
 
 # vectorized approach with `seq()`
-
+seq(2, 20, by = 2)
 ```
     
 2. Iterates over the `month.name` vector and stores a character vector of output containing strings like "Month 1: January", "Month 2: February".
     - Then, produce the same output with `str_c()` only.
     
-```{r}    
+```{r}
 # for loop
-
-
+month_strings <- vector("character", length = length(month.name))
+for (i in seq_along(month.name)) {
+    month_strings[i] <- str_c("Month ", i, ": ", month.name[i])
+}
+month_strings
 
 # vectorized approach with `str_c()`
+str_c("Month ", seq_along(month.name), ": ", month.name)
 ```
 
 3. On the `diamonds` dataset, fit stratified models of price vs. carat, model separately estimated for each value of `cut`, and store the fitted models in a list storage container.
 
-```{r}    
+```{r}
 # for loop
+cut_levels <- levels(diamonds$cut)
+models <- vector("list", length = length(cut_levels))
 
+for (i in seq_along(cut_levels)) {
+    data_subset <- diamonds |> filter(cut == cut_levels[i])
+    models[[i]] <- lm(price ~ carat, data = data_subset)
+}
 
-
-
+names(models) <- cut_levels
+models
 ```
 
 
@@ -298,14 +321,19 @@ Using the `diamonds` dataset:
 1. Transform the `x`, `y`, and `z` columns so that the units of millimeters are displayed (e.g., "4.0 mm").
 
 ```{r}
-
+diamonds |>
+    mutate(across(
+        .cols = c(x, y, z),
+        .fns = function(col) str_c(round(col, 1), " mm")
+    ))
 ```
 
 2. Convert all numeric columns into character columns.
     - Hint: type `is.` and hit Tab in the Console. Scroll through the function options. Do the same with `as.`
 
 ```{r}
-
+diamonds |>
+    mutate(across(.cols = where(is.numeric), .fns = as.character))
 ```
 
 
@@ -383,23 +411,48 @@ Work with your partner on the following exercises. As you work, make note of wha
 1. Use `crossing()` to create the data frame of argument combinations for our analyses. Call it `df_arg_combos`. Note that you can create a list of **formula** objects in R with `c(y ~ x1, y ~ x1 + x2)`. (Something like this will be the right hand side of an argument to `crossing()`.)
 
 ```{r}
-
+df_arg_combos <- crossing(
+    mod_formula = c(
+        price ~ carat,
+        price ~ carat + cut,
+        price ~ carat + cut + clarity,
+        price ~ carat + cut + clarity + color
+    ),
+    remove_outliers = c(TRUE, FALSE)
+)
+df_arg_combos
 ```
 
 2. Write a function called `remove_outliers` that removes outliers in a dataset. The user should be able to supply the dataset (`data`), the variable to remove outliers in (`what_var`), and a threshold on the number of SDs away from the mean used to define outliers (`sd_thresh`). Write your function so that it runs as follows: `remove_outliers(diamonds, what_var = carat, sd_thresh = 3)`.
 
 ```{r}
+remove_outliers <- function(data, what_var, sd_thresh) {
+    data |>
+        mutate(
+            zscore = ({{ what_var }} - mean({{ what_var }}, na.rm = TRUE)) /
+                      sd({{ what_var }}, na.rm = TRUE)
+        ) |>
+        filter(abs(zscore) <= sd_thresh) |>
+        select(-zscore)
+}
 
+# Test
+remove_outliers(diamonds, what_var = carat, sd_thresh = 3)
 ```
 
 3. Write a function called `fit_model` that implements the different settings for our `diamonds` analysis.
 
-```{r eval=FALSE}
+```{r}
 fit_model <- function(data, mod_formula, remove_outliers) {
     # remove_outliers is a TRUE/FALSE flag of whether or not to remove outliers
     # This function implements our specific use case: outliers are cases that are 3 SDs away from the mean for the carat variable
-    
+
+    if (remove_outliers) {
+        data <- remove_outliers(data, what_var = carat, sd_thresh = 3)
+    }
+
     # Use mod_formula as the first argument of lm()
+    lm(mod_formula, data = data)
 }
 ```
 
@@ -420,7 +473,17 @@ Note that in `df_arg_combos`:
 - `remove_outliers`: this column is a **vector** and you can extract the 1st element with `[1]`
 
 ```{r}
+fitted_models <- vector("list", length = nrow(df_arg_combos))
 
+for (i in seq_len(nrow(df_arg_combos))) {
+    fitted_models[[i]] <- fit_model(
+        data            = diamonds,
+        mod_formula     = df_arg_combos$mod_formula[[i]],
+        remove_outliers = df_arg_combos$remove_outliers[i]
+    )
+}
+
+fitted_models
 ```
 ## Done!
 

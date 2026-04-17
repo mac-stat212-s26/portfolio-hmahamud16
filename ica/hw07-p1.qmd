@@ -1,0 +1,238 @@
+---
+title: "HW07-P1 Programming + JSON"
+author: "Hamza Mahamud"
+format:
+  html:
+    embed-resources: true
+---
+
+## Instructions
+
+**Requirements**
+
+Ex 1
+
+- Stated the access date to <https://github.com/artsmia/collection>
+- Instruct Git to ignore `data/raw/`
+
+Ex 2
+
+- Wrote a function that included `try()`
+- Wrote a function that included `nulltoNA()`
+- Used `map()` to iterate over file paths with `list_rbind()`
+- Ended up with a data frame of the full data from Mia
+
+Ex 3
+
+- Has mia_collection.csv in `data/clean/`
+
+Ex 4
+
+- `continent_clean` has only the values indicated and no missing values
+- assumptions used in the cleaning process are clearly stated
+
+Ex 5
+
+- Created an appropriate graphic for department v. continent_clean
+- Included axis labels and a title for the visualization to provide necessary data context.
+
+
+## Goal
+
+Create a visualization based on data from Mia collection.  This will allow you to
+
+- Practice working with JSON files
+- Practice working with multiple files
+- Practice cleaning string data
+
+## Ex 1
+
+Download the [Mia collection](https://github.com/artsmia/collection) repository as a zip file to your local machine (click **Code** --> click **Download ZIP**) then unzip it. The `objects` folder contains a collection of JSON files with information about the Minneapolis Institute of Art's collection. Copy this `objects` folder to this homework `data/raw/` folder.  This folder does not need to be tracked, so instruct Git to ignore it (open **GitHub Desktop** --> right click the folder --> select **Ignore folder (add to .gitignore)** --> Select the folder that you want to be ignored)
+
+> Access Date: April 1, 2026
+
+If you have trouble downloading this file, start by downloading a subset [here](https://drive.google.com/open?id=1ahNg6mgM8XssF2LS68Ywg1yCbhzfmdpc&usp=drive_fs). For submission, you should have accessed the full dataset from Github but this subset will help you start working on the task while you wait for the full download.
+
+
+## Ex 2
+
+Write code that reads in all the JSON files in the `objects` folder and returns a tibble with the following columns:
+'id','accession_number','title','artist','classification','continent','country','dated','life_date','department','culture','nationality','room','style','medium','dimension','description','object_name'
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(jsonlite)
+
+# The objects folder contains numbered sub-folders; recursive = TRUE
+# ensures dir() descends into all of them to find every .json file
+path       <- "data/raw/objects"
+files      <- dir(path, pattern = "\\.json$", recursive = TRUE)
+file_paths <- file.path(path, files)
+
+# nullToNA: converts NULL (missing JSON field) to NA so tibble() won't error
+nullToNA <- function(x) {
+  if (is.null(x)) x <- NA
+  x
+}
+
+# read_json_file: reads one JSON file, returns a 1-row tibble of the columns
+# of interest.  try() silently swallows parse errors and returns NULL;
+# list_rbind() will automatically skip NULL elements.
+read_json_file <- function(file_path) {
+
+  result <- try(jsonlite::read_json(file_path), silent = TRUE)
+  if (inherits(result, "try-error")) return(NULL)
+
+  # Some fields can be arrays or nested lists; collapse to a single string
+  safe_extract <- function(x) {
+    val <- nullToNA(x)
+    if (is.list(val))    val <- paste(unlist(val), collapse = "; ")
+    if (length(val) > 1) val <- paste(val, collapse = "; ")
+    as.character(val)
+  }
+
+  tibble(
+    id               = safe_extract(result$id),
+    accession_number = safe_extract(result$accession_number),
+    title            = safe_extract(result$title),
+    artist           = safe_extract(result$artist),
+    classification   = safe_extract(result$classification),
+    continent        = safe_extract(result$continent),
+    country          = safe_extract(result$country),
+    dated            = safe_extract(result$dated),
+    life_date        = safe_extract(result$life_date),
+    department       = safe_extract(result$department),
+    culture          = safe_extract(result$culture),
+    nationality      = safe_extract(result$nationality),
+    room             = safe_extract(result$room),
+    style            = safe_extract(result$style),
+    medium           = safe_extract(result$medium),
+    dimension        = safe_extract(result$dimension),
+    description      = safe_extract(result$description),
+    object_name      = safe_extract(result$object_name)
+  )
+}
+
+# map() over all file paths; list_rbind() stacks the rows (NULLs are ignored)
+mia_collection <- map(file_paths, read_json_file) |>
+  list_rbind()
+
+dim(mia_collection)
+head(mia_collection)
+```
+
+
+## Ex 3
+
+Save `mia_collection` as a `mia_collection.csv` file to the `data/processed/` folder of this homework.
+
+```{r}
+#| eval: false
+
+# Create the folder if it doesn't exist yet
+dir.create("data/processed/", recursive = TRUE, showWarnings = FALSE)
+
+write_csv(mia_collection, "data/processed/mia_collection.csv")
+```
+
+
+## Ex 4
+
+Explore the `continent` variable. Create a "clean" version of the variable called `continent_clean` such that each object has 1 value from the following: "Europe", "Africa", "North America", "Asia", "South America", "Antarctica", "Oceania", "Unknown Continent". As you clean the variable, state your assumptions explicitly so that someone could replicate your work based on your words. Remember to read the data your stored in the previous step first.
+
+> Assumptions:
+>
+> 1. **"Europe"** → "Europe". Straightforward exact match.
+> 2. **"Americas"** → "North America". The MIA stores all Western-hemisphere objects under the single label "Americas" rather than distinguishing North from South America. Because the museum is US-based and the bulk of its Americas collection focuses on pre-Columbian and indigenous North/Central American art, "Americas" is mapped to "North America". This is an acknowledged simplification.
+> 3. **"Asia"** and **`"Asia"`** (value found with stray quotation marks in a small number of records) → "Asia".
+> 4. **"Africa"** → "Africa".
+> 5. **"North America"** (appears in a handful of records using the full label) → "North America".
+> 6. **"Oceania"** → "Oceania".
+> 7. **Multi-continent values** such as "Americas, Europe" or "Africa, Americas" — the first continent listed is used, on the assumption that it reflects the primary geographic origin of the object. These are mapped by whichever single-continent rule matches first in the `case_when()`.
+> 8. **NA / "NA" / unrecognised values** → "Unknown Continent".
+
+```{r}
+library(tidyverse)
+
+mia_collection <- read_csv("data/processed/mia_collection.csv")
+
+mia_collection <- mia_collection |>
+  mutate(
+    # Strip any stray quotation marks that appear around some continent values
+    continent = str_remove_all(continent, '"'),
+    continent_clean = case_when(
+      is.na(continent) | continent == "NA"
+        ~ "Unknown Continent",
+      str_detect(continent, regex("^Europe", ignore_case = TRUE))
+        ~ "Europe",
+      str_detect(continent, regex("^Africa", ignore_case = TRUE))
+        ~ "Africa",
+      str_detect(continent, regex("^(Americas|North America|Central America)", ignore_case = TRUE))
+        ~ "North America",
+      str_detect(continent, regex("^South America", ignore_case = TRUE))
+        ~ "South America",
+      str_detect(continent, regex("^Asia", ignore_case = TRUE))
+        ~ "Asia",
+      str_detect(continent, regex("^Oceania", ignore_case = TRUE))
+        ~ "Oceania",
+      str_detect(continent, regex("^Antarctica", ignore_case = TRUE))
+        ~ "Antarctica",
+      TRUE
+        ~ "Unknown Continent"
+    )
+  )
+
+# Don't erase the code below; this will show your final work
+mia_collection |>
+  count(continent_clean)
+
+unique(mia_collection$continent_clean)
+```
+
+
+## Ex 5
+
+Make a visualization that looks at the relationship between `department` and `continent_clean`.
+
+```{r}
+library(tidyverse)
+
+mia_collection |>
+  filter(!is.na(department)) |>
+  count(department, continent_clean) |>
+  mutate(department = str_wrap(department, width = 25)) |>
+  ggplot(aes(x = continent_clean,
+             y = fct_reorder(department, n, sum),
+             fill = n)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = n), size = 3, color = "white", fontface = "bold") +
+  scale_fill_gradient(low = "#cfe2f3", high = "#08519c") +
+  labs(
+    title = "MIA Collection: Objects by Department and Continent of Origin",
+    x     = "Continent of Origin",
+    y     = "Department",
+    fill  = "# Objects"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid  = element_blank()
+  )
+```
+
+
+## Resources Reflection (required)
+
+List the resources you used to help with this assignment then write 3-5 sentence reflection on which resources were most helpful in finishing this task.
+
+**Resources:**
+
+- `jsonlite` package documentation: <https://cran.r-project.org/package=jsonlite>
+- MIA collection GitHub repository: <https://github.com/artsmia/collection>
+- purrr `map()` / `list_rbind()` reference: <https://purrr.tidyverse.org/reference/>
+
+**Reflection:**
+
+The `jsonlite` documentation was most helpful for understanding the difference between `fromJSON()` (which attempts auto-flattening and can fail on irregular nested structures) and `read_json()` (which returns a plain R list and handles inconsistent schemas gracefully). This was critical because the MIA JSON files vary widely in which fields are present and whether values are scalars or arrays. The purrr documentation on `list_rbind()` confirmed that it silently drops `NULL` elements, making the `try()`-returns-`NULL` error handling pattern in `read_json_file()` clean and self-contained. Inspecting a sample of the raw JSON files early on was also essential — it revealed that the `continent` field uses the label "Americas" rather than "North America" or "South America", and that a small number of records had stray quotation marks embedded in the value, both of which required targeted cleaning assumptions.

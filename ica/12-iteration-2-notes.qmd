@@ -1,5 +1,6 @@
 ---
 title: "12 Loops+Iter II"
+author: "Hamza Mahamud"
 ---
 
 ## 🧩 Learning Goals
@@ -15,6 +16,9 @@ By the end of this lesson, you should be able to:
 
 Let's write a `for` loop that stores the `class()` (type) of every column in the `mtcars` data frame. 
 
+```{r}
+library(tidyverse)
+```
 
 
 Yes, `str()` does this plus more for you. Let's consider replicating this task through low-level iteration.
@@ -30,7 +34,20 @@ Recall that:
 - Then translate each step to code.
 
 ```{r}
+# Steps:
+# 1. Create a character storage container with length = ncol(mtcars)
+# 2. Loop over each column index with seq_along()
+# 3. Extract the column with [[i]] and call class() on it
+# 4. Store the result; name the output vector using colnames()
 
+col_classes <- vector("character", length = ncol(mtcars))
+
+for (i in seq_along(mtcars)) {
+    col_classes[i] <- class(mtcars[[i]])
+}
+
+names(col_classes) <- colnames(mtcars)
+col_classes
 ```
 
 ## Iteration with `purrr` 
@@ -63,7 +80,10 @@ results1 <- bench::mark(
     x <- c(x, i)
   }
 )
+```
 
+
+```{r}
 # Example 2: For loop with a storage container!
 x <- vector('integer', length = 1e5)
 results2 <- bench::mark(
@@ -71,7 +91,10 @@ results2 <- bench::mark(
     x[i] <- i
   }
 )
+```
 
+
+```{r}
 # Example 3: purrr::map()
 results3 <- bench::mark(purrr::map_int(1:1e5, ~.x))
 
@@ -170,7 +193,35 @@ map_int(diamonds |> select(!where(is.numeric)), n_distinct)
     
 Once you've done that with `map()`, write a `for` loop to achieve the same result. Which do you prefer in terms of ease of code writing and readability?
 
+```{r}
+# Function returning summary stats as a 1-row data frame
+summ_stats <- function(x) {
+    tibble(
+        mean   = mean(x, na.rm = TRUE),
+        median = median(x, na.rm = TRUE),
+        sd     = sd(x, na.rm = TRUE),
+        iqr    = IQR(x, na.rm = TRUE)
+    )
+}
 
+# Select numeric columns from diamonds
+diamonds_num <- diamonds |> select(where(is.numeric))
+
+# map() approach
+map(diamonds_num, summ_stats) |>
+    bind_rows() |>
+    mutate(variable = colnames(diamonds_num), .before = 1)
+
+# for loop approach
+results <- vector("list", length = ncol(diamonds_num))
+for (i in seq_along(diamonds_num)) {
+    results[[i]] <- summ_stats(diamonds_num[[i]])
+}
+bind_rows(results) |>
+    mutate(variable = colnames(diamonds_num), .before = 1)
+
+# map() is more concise and readable; the for loop requires manual storage management.
+```
 
 
 ## Iteration with `map2` or `pmap` 
@@ -237,7 +288,22 @@ pmap_chr(string_data, str_replace_all, string = "ppp nnn hhh")
 - Use different arguments for `start` and `end` but a fixed `string`
 
 ```{r}
+# Example 1: Different string, start, and end for each iteration
+example1 <- tibble(
+    string = c("January", "February", "March"),
+    start  = c(1, 1, 1),
+    end    = c(3, 3, 3)
+)
+pmap_chr(example1, str_sub)
+# Returns: "Jan", "Feb", "Mar"
 
+# Example 2: Fixed string, different start and end positions
+example2 <- tibble(
+    start = c(1, 5, 8),
+    end   = c(4, 7, 10)
+)
+pmap_chr(example2, str_sub, string = "Hello World!")
+# Returns: "Hell", "o W", "orl"
 ```
 
 2. Last class we worked on an extended exercise where our goal was to write a series of functions and a `for` loop to repeat linear model fitting under different "settings" (removal of outliers, model formula choice). 
@@ -276,10 +342,10 @@ fit_model <- function(data, mod_formula, remove_outliers) {
 }
 
 # use pmap()
-
-
-
-
+# pmap() iterates over rows of df_arg_combos, passing each row's columns as
+# named arguments to fit_model(). The fixed `data` argument is passed separately.
+fitted_models <- pmap(df_arg_combos, fit_model, data = diamonds)
+fitted_models
 ```
 
 ## Iteration with `walk` 
