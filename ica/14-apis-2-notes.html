@@ -751,6 +751,30 @@ Body: In memory (1691 bytes)</code></pre>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="fu">cat</span>(<span class="fu">resp_body_string</span>(resp))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output cell-output-stdout">
 <pre><code>[["NAME","B02015_009E","B02015_009M","state"],
+["Illinois","655","511","17"],
+["Georgia","3162","1336","13"],
+["Idaho",null,null,"16"],
+["Hawaii","56","92","15"],
+["Indiana","1344","1198","18"],
+["Iowa","685","705","19"],
+["Kansas","2189","1177","20"],
+["Kentucky","530","503","21"],
+["Louisiana","0","224","22"],
+["Maine",null,null,"23"],
+["Maryland","83","108","24"],
+["Massachusetts","512","688","25"],
+["Michigan","8955","3337","26"],
+["Minnesota","91051","7256","27"],
+["Connecticut","0","213","09"],
+["Florida","1680","1153","12"],
+["Alabama","461","532","01"],
+["Alaska",null,null,"02"],
+["Arizona","141","162","04"],
+["Arkansas",null,null,"05"],
+["California","95738","10184","06"],
+["Colorado","3071","1267","08"],
+["Delaware",null,null,"10"],
+["District of Columbia","0","218","11"],
 ["Mississippi",null,null,"28"],
 ["Missouri","953","1141","29"],
 ["Montana",null,null,"30"],
@@ -778,31 +802,7 @@ Body: In memory (1691 bytes)</code></pre>
 ["West Virginia",null,null,"54"],
 ["Wisconsin","51816","4827","55"],
 ["Wyoming",null,null,"56"],
-["Puerto Rico",null,null,"72"],
-["Illinois","655","511","17"],
-["Georgia","3162","1336","13"],
-["Idaho",null,null,"16"],
-["Hawaii","56","92","15"],
-["Indiana","1344","1198","18"],
-["Iowa","685","705","19"],
-["Kansas","2189","1177","20"],
-["Kentucky","530","503","21"],
-["Louisiana","0","224","22"],
-["Maine",null,null,"23"],
-["Maryland","83","108","24"],
-["Massachusetts","512","688","25"],
-["Michigan","8955","3337","26"],
-["Minnesota","91051","7256","27"],
-["Connecticut","0","213","09"],
-["Florida","1680","1153","12"],
-["Alabama","461","532","01"],
-["Alaska",null,null,"02"],
-["Arizona","141","162","04"],
-["Arkansas",null,null,"05"],
-["California","95738","10184","06"],
-["Colorado","3071","1267","08"],
-["Delaware",null,null,"10"],
-["District of Columbia","0","218","11"]]</code></pre>
+["Puerto Rico",null,null,"72"]]</code></pre>
 </div>
 <details class="code-fold"><summary>Code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>resp_json_df <span class="ot">&lt;-</span> resp <span class="sc">|&gt;</span> <span class="fu">resp_body_json</span>(<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
@@ -813,13 +813,13 @@ Body: In memory (1691 bytes)</code></pre>
 <span id="cb8-7"><a href="#cb8-7"></a></span>
 <span id="cb8-8"><a href="#cb8-8"></a><span class="fu">head</span>(resp_json_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output cell-output-stdout">
-<pre><code>           NAME B02015_009E B02015_009M state
-1   Mississippi          NA          NA    28
-2      Missouri         953        1141    29
-3       Montana          NA          NA    30
-4      Nebraska         412         477    31
-5        Nevada         863         745    32
-6 New Hampshire          NA          NA    33</code></pre>
+<pre><code>      NAME B02015_009E B02015_009M state
+1 Illinois         655         511    17
+2  Georgia        3162        1336    13
+3    Idaho          NA          NA    16
+4   Hawaii          56          92    15
+5  Indiana        1344        1198    18
+6     Iowa         685         705    19</code></pre>
 </div>
 </div>
 </section></section><section id="more-api-examples" class="level2"><h2 class="anchored" data-anchor-id="more-api-examples">More API Examples</h2>
