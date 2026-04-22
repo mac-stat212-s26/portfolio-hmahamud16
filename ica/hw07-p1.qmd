@@ -154,6 +154,7 @@ Explore the `continent` variable. Create a "clean" version of the variable calle
 > 8. **NA / "NA" / unrecognised values** → "Unknown Continent".
 
 ```{r}
+#| eval: false
 library(tidyverse)
 
 mia_collection <- read_csv("data/processed/mia_collection.csv")
@@ -197,6 +198,7 @@ unique(mia_collection$continent_clean)
 Make a visualization that looks at the relationship between `department` and `continent_clean`.
 
 ```{r}
+#| eval: false
 library(tidyverse)
 
 mia_collection |>
