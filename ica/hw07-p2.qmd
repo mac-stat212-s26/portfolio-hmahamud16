@@ -1,0 +1,293 @@
+---
+title: "HW07-P2 Navigating the Census API"
+author: "Hamza Mahamud"
+format:
+  html:
+    embed-resources: true
+---
+
+## Instructions
+
+**Requirements**
+
+Ex 1
+
+- Wrote a function that provided the right output (data frame)
+- Wrote a function that gave appropriate stop message for year
+- Wrote a function that could handle all potential variables (including NAME)
+
+
+Ex 2
+
+- Created test cases that covered years inside and outside the accepted range
+- Created test cases that checked for variables that included NAME
+- Created test cases that checked with and without MOE.
+
+Ex 3
+
+- Correctly iterated over years with a for loop (with a storage container)
+- Correctly iterated over years with `map()`
+
+
+Ex 4
+
+- Created appropriate visualizations that showed the relationships between year and the two variables
+- Incorporated uncertainty (MOE) into the Income visual
+- Included axis labels and a title for the visualization to provide necessary data context.
+
+
+## Goal
+
+Use the [Census API user guide](https://www.census.gov/data/developers/guidance/api-user-guide.html) to obtain data from the American Community Survey (ACS) and practice writing functions that interact with APIs.
+
+
+## Ex 1
+
+Write a function called `get_acs1()` that gets 1-year ACS data for a given year for a set of user specified variables for all states. Function arguments should include:
+    - `year`: Within your function check that this is between 2005 and 2022 and not 2020 (data only available from 2005-2022 except for 2020). If the year is outside this range, include `stop("Helpful error message here")` to display a helpful error message to the user.
+    - `variables`: A character vector of variable names to obtain. e.g., `c("B02015_009", "B01003_001")`. Note that these don't have "E" or "M" at the end. You'll always return the "E" version (for the estimate). See next argument for the "M" version. Make sure your function can also handle variables like `NAME`.
+    - `include_moe`: TRUE/FALSE indicator of whether to additionally include the "M" version (for the margin of error on the estimate). Set the default to TRUE.
+    - `key`: Census API key (if you have trouble getting a key, email the instructor as soon as possible)
+    Your function should include a `Sys.sleep(0.5)` at the beginning to pause code execution for 0.5 seconds. While the Census API does not seem to have a [rate limit](https://www.census.gov/data/developers/guidance/api-user-guide.Help_&_Contact_Us.html) when you provide an API key, include this pause just to be safe.
+
+```{r}
+library(tidyverse)
+library(jsonlite)
+
+get_acs1 <- function(year, variables, include_moe = TRUE, key) {
+
+  # Pause to avoid overwhelming the API
+  Sys.sleep(0.5)
+
+  # Validate year: must be 2005–2022, excluding 2020
+  valid_years <- c(2005:2019, 2021:2022)
+  if (!(year %in% valid_years)) {
+    stop(paste0(
+      "Year ", year, " is not available in the ACS 1-year estimates. ",
+      "Please choose a year between 2005 and 2022, excluding 2020 ",
+      "(no 1-year ACS was published for 2020 due to COVID-19 data collection issues)."
+    ))
+  }
+
+  # Build the variable list to request from the API.
+  # "NAME" is a special metadata variable that does not take an E/M suffix.
+  # All other variables get "E" appended for the estimate; if include_moe is
+  # TRUE they also get "M" appended for the margin of error.
+  numeric_vars <- variables[variables != "NAME"]
+  name_var     <- variables[variables == "NAME"]
+
+  vars_e <- c(name_var, paste0(numeric_vars, "E"))
+  vars_m <- paste0(numeric_vars, "M")
+
+  vars_to_fetch <- if (include_moe) c(vars_e, vars_m) else vars_e
+  vars_str      <- paste(vars_to_fetch, collapse = ",")
+
+  # Construct the Census API URL for all states
+  url <- paste0(
+    "https://api.census.gov/data/", year, "/acs/acs1",
+    "?get=", vars_str,
+    "&for=state:*",
+    "&key=", key
+  )
+
+  # Fetch and parse; fromJSON on a Census URL returns a character matrix
+  # where row 1 is the header and the remaining rows are data
+  raw <- fromJSON(url)
+
+  df <- as_tibble(raw[-1, , drop = FALSE], .name_repair = "minimal")
+  names(df) <- raw[1, ]
+
+  # Attach the year so we can stack multiple years later
+  df |> mutate(year = year)
+}
+```
+
+
+## Ex 2
+
+Come up with a set of test cases that will **fully** test your function. Update your function as needed as you run your tests. Show output from successful tests on all test cases- make sure they are printed and visible in the HTML.
+
+```{r}
+# Store your Census API key
+census_key <- readLines("census_api_key") |> trimws()
+
+# ── Test 1: year below valid range → should produce an informative error ──────
+tryCatch(
+  get_acs1(year = 2003, variables = c("B01003_001"), key = census_key),
+  error = function(e) cat("Test 1 (year 2003) — Error caught as expected:\n ", conditionMessage(e), "\n\n")
+)
+
+# ── Test 2: year = 2020 (excluded) → should produce an informative error ─────
+tryCatch(
+  get_acs1(year = 2020, variables = c("B01003_001"), key = census_key),
+  error = function(e) cat("Test 2 (year 2020) — Error caught as expected:\n ", conditionMessage(e), "\n\n")
+)
+
+# ── Test 3: year above valid range → should produce an informative error ──────
+tryCatch(
+  get_acs1(year = 2024, variables = c("B01003_001"), key = census_key),
+  error = function(e) cat("Test 3 (year 2024) — Error caught as expected:\n ", conditionMessage(e), "\n\n")
+)
+
+# ── Test 4: valid year, NAME included, with MOE (default) ────────────────────
+# Checks that NAME is handled correctly (no E/M suffix appended)
+cat("Test 4 — valid year, NAME + B01003_001, include_moe = TRUE:\n")
+result_4 <- get_acs1(year = 2021,
+                     variables = c("NAME", "B01003_001"),
+                     key = census_key)
+print(head(result_4))
+cat("Columns:", names(result_4), "\n\n")
+
+# ── Test 5: valid year, no NAME, include_moe = FALSE ─────────────────────────
+cat("Test 5 — valid year, no NAME, include_moe = FALSE:\n")
+result_5 <- get_acs1(year = 2021,
+                     variables = c("B01003_001"),
+                     include_moe = FALSE,
+                     key = census_key)
+print(head(result_5))
+cat("Columns (should have no M column):", names(result_5), "\n\n")
+
+# ── Test 6: valid year, with MOE, no NAME ────────────────────────────────────
+cat("Test 6 — valid year, include_moe = TRUE (default):\n")
+result_6 <- get_acs1(year = 2021,
+                     variables = c("B01003_001"),
+                     key = census_key)
+print(head(result_6))
+cat("Columns (should include both E and M):", names(result_6), "\n\n")
+
+# ── Test 7: earliest valid year ───────────────────────────────────────────────
+cat("Test 7 — earliest valid year (2005):\n")
+result_7 <- get_acs1(year = 2005,
+                     variables = c("B01003_001"),
+                     key = census_key)
+print(head(result_7))
+```
+
+
+## Ex 3
+
+Obtain 1-year ACS data for all states from 2005-2022 (except 2020) for the following two variables: `B01003_001` (total population) and `B06011_001` (Median Income in the Past 12 Months in 2022 Inflation-Adjusted Dollars).
+    - Get both the estimate and the margin of error for these two variables.
+    - Put all of this information into a single data frame.
+    - Do this with both a `for` loop and with an appropriate `purrr` function. (See our iteration day 2 activity for reference.)
+    - Verify using the `identical()` function that you get identical data frames from both approaches.
+
+```{r}
+census_key <- readLines("census_api_key") |> trimws()
+
+years     <- c(2005:2019, 2021:2022)
+variables <- c("NAME", "B01003_001", "B06011_001")
+
+# ── For loop approach ─────────────────────────────────────────────────────────
+# Pre-allocate a list with one slot per year (best practice — avoids repeated
+# object growth)
+acs_list_forloop <- vector("list", length(years))
+
+for (i in seq_along(years)) {
+  acs_list_forloop[[i]] <- get_acs1(year      = years[i],
+                                    variables = variables,
+                                    include_moe = TRUE,
+                                    key       = census_key)
+}
+
+acs_forloop <- list_rbind(acs_list_forloop)
+
+# ── map() approach ────────────────────────────────────────────────────────────
+acs_map <- map(years,
+               ~ get_acs1(year      = .x,
+                           variables = variables,
+                           include_moe = TRUE,
+                           key       = census_key)) |>
+  list_rbind()
+
+# ── Verify both approaches give identical results ─────────────────────────────
+identical(acs_forloop, acs_map)
+
+head(acs_map)
+dim(acs_map)
+```
+
+
+## Ex 4
+
+Create visualizations that show how the two variables have changed over 2005-2022 (except 2020).
+    - Show both the estimate and margin of error (if relevant) in an effective way.
+    - Make sure that your plots have clean labels and a title.
+
+```{r}
+library(tidyverse)
+library(scales)
+
+# ── Prepare data ──────────────────────────────────────────────────────────────
+acs_clean <- acs_map |>
+  mutate(
+    year         = as.integer(year),
+    B01003_001E  = as.numeric(B01003_001E),
+    B06011_001E  = as.numeric(B06011_001E),
+    B06011_001M  = as.numeric(B06011_001M)
+  )
+
+# ── Plot 1: Total population (summed across all states) by year ───────────────
+# Population estimates have very small MOEs relative to the total, so a simple
+# line chart of the national sum is the clearest display.
+pop_by_year <- acs_clean |>
+  group_by(year) |>
+  summarize(total_pop = sum(B01003_001E, na.rm = TRUE), .groups = "drop")
+
+ggplot(pop_by_year, aes(x = year, y = total_pop)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(color = "steelblue", size = 2) +
+  scale_x_continuous(breaks = years) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title    = "Total US Population by Year (ACS 1-Year Estimates)",
+    subtitle = "Sum of state-level estimates across all 50 states + DC",
+    x        = "Year",
+    y        = "Total Population"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# ── Plot 2: Median income across states by year, with MOE ────────────────────
+# For each year, compute the average of state-level median incomes and the
+# average margin of error; show the ribbon to convey estimation uncertainty.
+income_by_year <- acs_clean |>
+  group_by(year) |>
+  summarize(
+    avg_median_income = mean(B06011_001E, na.rm = TRUE),
+    avg_moe           = mean(B06011_001M, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(income_by_year, aes(x = year, y = avg_median_income)) +
+  geom_ribbon(aes(ymin = avg_median_income - avg_moe,
+                  ymax = avg_median_income + avg_moe),
+              alpha = 0.25, fill = "tomato") +
+  geom_line(color = "tomato", linewidth = 1) +
+  geom_point(color = "tomato", size = 2) +
+  scale_x_continuous(breaks = years) +
+  scale_y_continuous(labels = dollar) +
+  labs(
+    title    = "Average State Median Income by Year (ACS 1-Year Estimates)",
+    subtitle = "Shaded ribbon shows average margin of error across states.\nIncome expressed in 2022 inflation-adjusted dollars.",
+    x        = "Year",
+    y        = "Average State Median Income"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+## Resources Reflection (required)
+
+List the resources you used to help with this assignment then write 3-5 sentence reflection on which resources were most helpful in finishing this task.
+
+**Resources:**
+
+- Census API User Guide: <https://www.census.gov/data/developers/guidance/api-user-guide.html>
+- ACS variable search tool: <https://api.census.gov/data/2021/acs/acs1/variables.html>
+- `jsonlite` documentation: <https://cran.r-project.org/package=jsonlite>
+
+**Reflection:**
+
+The Census API User Guide was the primary resource for understanding how to construct the request URL — specifically, the `?get=VAR1,VAR2&for=state:*&key=KEY` format and the fact that estimate and margin-of-error versions of a variable are distinguished only by their trailing "E" or "M" suffix. The ACS variable search tool was helpful for confirming the exact names and descriptions of `B01003_001` and `B06011_001` and for understanding why `NAME` is a special variable that does not receive either suffix. The `jsonlite` documentation clarified that `fromJSON()` called directly on a URL performs the HTTP GET request and parses the Census API's JSON response into a character matrix, where the first row is the header — which directly informed the data-frame construction step in `get_acs1()`.
