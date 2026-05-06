@@ -1,0 +1,274 @@
+---
+title: "HW08-P2 Databases"
+author: "Hamza Mahamud"
+format:
+  html:
+    embed-resources: true
+---
+
+## Instructions
+
+
+**Requirements**
+
+Ex 1
+
+- Correct SQL to get total number of badges
+
+Ex 2
+
+- Correct SQL to get total number of badges per name
+- Correct SQL to ordered correctly
+
+Ex 3
+
+- Correct SQL to get display name and date for a chosen type of badge
+
+Ex 4
+
+- Correct SQL to get display name or id of users who have received the most badges
+
+Ex 5
+
+- Correct SQL to get display name, user id, reputation, and creationdate, ordered by id
+
+Ex 6
+
+- Correct SQL to get display name, user id and total number of badges ordered by id
+
+Ex 6
+- Correct SQL to get user id, total number of posts, total upvotes, ordered by id
+
+Ex 7
+
+- Correct SQL to get user id, total number of comments, total upvotes on comments, ordered by id
+
+Ex 8
+
+- An appropriate visual of comments and posts.
+
+
+
+## Goal
+
+Analyze Stack Overflow [badges](https://stackoverflow.com/help/badges) and [posts](https://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede) data using SQL queries.
+
+Start at <https://data.stackexchange.com/stackoverflow/query/new>.  For each exercise, **record the query you used** in the qmd file; you run the query on <https://data.stackexchange.com/stackoverflow/query/new> to ensure you get the desired result.
+
+## Ex 1
+
+Count the number of total badges that have been given out. Hint: count the number of rows in the relevant table.
+
+> ANSWER: Each row in the Badges table represents one badge award, so `COUNT(Id)` gives the total number of badges given out.
+
+```{sql eval=FALSE}
+SELECT COUNT(Id) AS total_badges
+FROM Badges
+```
+
+
+## Ex 2
+
+Find how many times each badge has been awarded, sorted from most awarded to least awarded.
+
+> ANSWER: Group by the badge `Name` and count rows in each group, then sort descending by the count.
+
+```{sql eval=FALSE}
+SELECT Name, COUNT(Id) AS times_awarded
+FROM Badges
+GROUP BY Name
+ORDER BY times_awarded DESC
+```
+
+
+## Ex 3
+
+Find a badge that looks interesting to you. Find all the user **DisplayNames** that have received the badge, along with the date at which they received it.
+
+> ANSWER: I chose the "Famous Question" badge, which is awarded when a question reaches 10,000 views. The query joins Badges to Users on UserId = Users.Id to get the DisplayName.
+
+```{sql eval=FALSE}
+SELECT u.DisplayName, b.Date
+FROM Badges b
+JOIN Users u
+  ON b.UserId = u.Id
+WHERE b.Name = 'Famous Question'
+ORDER BY b.Date DESC
+```
+
+
+## Ex 4
+
+Show the users who have received the most badges, along with how many they have received.
+
+> ANSWER: Group badges by UserId, count them, then join to Users to get readable display names. Order by badge count descending.
+
+```{sql eval=FALSE}
+SELECT TOP(50) u.DisplayName, u.Id, COUNT(b.Id) AS badge_count
+FROM Badges b
+JOIN Users u
+  ON b.UserId = u.Id
+GROUP BY u.DisplayName, u.Id
+ORDER BY badge_count DESC
+```
+
+
+The next few activities analyze user activity. These activities mimic the common workflow of creating datasets in SQL that you analyze in `R`.
+
+
+## Ex 5
+
+Export a CSV file containing information about each user: `DisplayName, Id, Reputation, and CreationDate`. Because any queries that return more than 50,000 results return a random subset of 50,000 results, include a sort on the user ID variable to ensure that the first 50,000 users are retrieved. Name your file `users.csv`.
+
+> ANSWER: Select the four columns and sort ascending by Id so the query consistently returns the first 50,000 users by Id.
+
+```{sql eval=FALSE}
+SELECT TOP(50000) DisplayName, Id, Reputation, CreationDate
+FROM Users
+ORDER BY Id ASC
+```
+
+
+## Ex 6
+
+Make a table that has each user's total number of badges, and export this file as a CSV named `badges.csv`. Continue to include a sort on the user ID variable so that this data has information on the same first 50,000 users. *Hint: Start with the badges table, join information from users, and perform some grouped summaries.*
+
+> ANSWER: Join Badges to the same first-50,000 Users (filtered by Id range), group by UserId, and count badges. Sort by UserId ascending.
+
+```{sql eval=FALSE}
+SELECT u.Id AS UserId, COUNT(b.Id) AS total_badges
+FROM Users u
+LEFT JOIN Badges b
+  ON u.Id = b.UserId
+WHERE u.Id IN (
+  SELECT TOP(50000) Id FROM Users ORDER BY Id ASC
+)
+GROUP BY u.Id
+ORDER BY u.Id ASC
+```
+
+
+## Ex 7
+
+Make a table that has each user's total number of posts and total number of upvotes the user has cast, and export this file as a CSV named `posts.csv`. Continue to include a sort on the user ID variable so that this data has information on the same first 50,000 users. *Hint: Start with the posts table, join information from users, and perform some grouped summaries.*
+
+> ANSWER: Join Posts to Users, group by OwnerUserId, count posts, and sum UpVotes. Restrict to the same first 50,000 users by Id and sort by Id.
+
+```{sql eval=FALSE}
+SELECT u.Id AS UserId, COUNT(p.Id) AS total_posts, SUM(p.UpVotes) AS total_upvotes
+FROM Users u
+LEFT JOIN Posts p
+  ON u.Id = p.OwnerUserId
+WHERE u.Id IN (
+  SELECT TOP(50000) Id FROM Users ORDER BY Id ASC
+)
+GROUP BY u.Id
+ORDER BY u.Id ASC
+```
+
+
+## Ex 8
+
+Calculate the number of comments made per user, and the total number of upvotes across all comments made per user (this is the sum of the `Score` variable under the Comments table) and export this as a CSV file named `comments.csv`. Continue to include a sort on the user ID variable so that this data has information on the same first 50,000 users.
+
+> ANSWER: Join Comments to Users, group by UserId, count comments, and sum Score. Restrict to the same first 50,000 users and sort by Id.
+
+```{sql eval=FALSE}
+SELECT u.Id AS UserId, COUNT(c.Id) AS total_comments, SUM(c.Score) AS total_comment_upvotes
+FROM Users u
+LEFT JOIN Comments c
+  ON u.Id = c.UserId
+WHERE u.Id IN (
+  SELECT TOP(50000) Id FROM Users ORDER BY Id ASC
+)
+GROUP BY u.Id
+ORDER BY u.Id ASC
+```
+
+
+## Ex 9
+
+Import these four datasets into `R`. Visualize the relationship between the four datasets. Include at least two visualizations.
+
+Your goal should be to weave together a compelling story about how users on Stackoverflow earn badges through their activity on the site.
+
+> ANSWER:
+
+```{r}
+#| eval: false
+library(tidyverse)
+
+# Read the four exported CSV files
+users    <- read_csv("users.csv")
+badges   <- read_csv("badges.csv")
+posts    <- read_csv("posts.csv")
+comments <- read_csv("comments.csv")
+
+# Join all four tables on UserId / Id
+activity <- users |>
+  left_join(badges,   by = c("Id" = "UserId")) |>
+  left_join(posts,    by = c("Id" = "UserId")) |>
+  left_join(comments, by = c("Id" = "UserId")) |>
+  mutate(
+    total_badges          = replace_na(total_badges, 0),
+    total_posts           = replace_na(total_posts, 0),
+    total_upvotes         = replace_na(total_upvotes, 0),
+    total_comments        = replace_na(total_comments, 0),
+    total_comment_upvotes = replace_na(total_comment_upvotes, 0)
+  )
+
+# ── Plot 1: Posts vs. Badges ──────────────────────────────────────────────────
+# Users who post more tend to earn more badges. Log-scale both axes to handle
+# the heavy right skew.
+activity |>
+  filter(total_posts > 0, total_badges > 0) |>
+  ggplot(aes(x = total_posts, y = total_badges)) +
+  geom_point(alpha = 0.2, size = 0.8, color = "steelblue") +
+  geom_smooth(method = "lm", color = "darkblue", se = FALSE) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(
+    title    = "More Posts → More Badges",
+    subtitle = "Each point is one Stack Overflow user (log–log scale)",
+    x        = "Total Posts (log scale)",
+    y        = "Total Badges (log scale)"
+  ) +
+  theme_minimal()
+
+# ── Plot 2: Reputation vs. Badges, coloured by posting activity ───────────────
+# High-reputation users tend to have both many posts and many badges,
+# suggesting reputation is driven by quality posting rather than comment volume.
+activity |>
+  filter(Reputation > 0, total_badges > 0) |>
+  mutate(post_bin = cut(total_posts,
+                        breaks = c(-Inf, 0, 10, 50, Inf),
+                        labels = c("0 posts", "1–10", "11–50", "50+"))) |>
+  ggplot(aes(x = Reputation, y = total_badges, color = post_bin)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_color_brewer(palette = "Blues", direction = 1) +
+  labs(
+    title    = "Reputation & Badges Rise Together with Posting Activity",
+    subtitle = "Points coloured by number of posts; log–log scale",
+    x        = "Reputation (log scale)",
+    y        = "Total Badges (log scale)",
+    color    = "Posts"
+  ) +
+  theme_minimal()
+```
+
+
+## Resources Reflection (required)
+
+List the resources you used to help with this assignment then write 3-5 sentence reflection on which resources were most helpful in finishing this task.
+
+**Resources:**
+
+- Stack Exchange Data Explorer: <https://data.stackexchange.com/stackoverflow/query/new>
+- Stack Exchange database schema: <https://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede>
+- SQL Tutorial (W3Schools): <https://www.w3schools.com/sql/>
+
+**Reflection:**
+
+The Stack Exchange database schema documentation was the most important reference — without knowing that `Posts.OwnerUserId` links to `Users.Id` and that `Comments.Score` represents upvotes on comments rather than the comment text itself, the join and aggregation queries would have been difficult to construct correctly. The Data Explorer itself was invaluable for iterative testing: being able to run a query and immediately see the result (and the column names) made it easy to catch mistakes like using the wrong table alias or forgetting to alias an aggregate column. The W3Schools SQL reference was a quick refresher on `LEFT JOIN` versus `JOIN` semantics, which mattered here because users with zero posts or zero comments still need to appear in the exported tables.

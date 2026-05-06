@@ -1,0 +1,101 @@
+---
+title: "Exam 1 Summaries"
+author: "Hamza Mahamud"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: true
+geometry: margin=1in
+fontsize: 12pt
+header-includes:
+  - \setlength{\parindent}{2em}
+  - \setlength{\parskip}{0.5em}
+---
+
+\newpage
+
+# Adv. Data Viz | ggplot2
+
+## Why would someone bother making a fancy graph?
+
+A basic chart gets the job done, but sometimes you need your graph to do more work. Advanced data visualization is about building graphs that are layered, precise, and actually tell a story. These stories should be start to finish, which is why we make sure each one is labeled and detailed so that someone not familiar with any of the concepts can read it. Think of it like the difference between a rough sketch and a finished painting. Both show something, but one makes the point way more clearly.
+
+## Okay, so what is ggplot2 exactly?
+
+ggplot2 is a package in R that lets you build graphs piece by piece, like stacking Lego bricks. Each "brick" is called a **geom**, and you stack them on top of each other to build up your visualization.
+
+* **Package:** a collection of tools someone wrote for R so you don't have to build everything from scratch.
+* **Geom:** short for "geometric object." It's the visual shape that represents your data; a line, a bar, a dot, a shaded region, etc.
+* **Layer:** one geom stacked on top of another. You can have as many layers as you want on a single graph.
+
+## How does layering actually work?
+
+Imagine you're drawing a weather chart. You might start by drawing the all-time record highs and lows, so that's your first layer. Then you draw the "normal" expected range for the year on top of that. Then you draw what actually happened this year on top of *that*. Each new layer adds more context without erasing what came before.
+
+This is exactly what advanced ggplot2 lets you do. You can mix and match different geoms — like `geom_linerange()` for ranges, `geom_point()` for individual data points, or `geom_text()` for adding labels right on the chart.
+
+## What if I don't know which geom to use?
+
+This is where documentation comes in. R has a built-in help system, and ggplot2 has an official reference page where you can browse all the available geoms. Each one comes with:
+
+* **Usage:** what arguments (inputs) the function needs.
+* **Arguments:** a breakdown of what each input controls.
+* **Aesthetics:** things you can visually customize, like color, size, or line type.
+* **Examples:** copy-paste code to see what it looks like before committing.
+
+You can also search online to describe what you're trying to do. Just make sure to double-check any code it gives you, since it won't always be right. I tend to use Stack Overflow, or other R focused websites.
+
+## Can one graph pull from more than one dataset?
+
+Yes! This is one of the more powerful things ggplot2 can do. You can set a default dataset for your whole graph, and then override it in individual layers. So if Layer 1 pulls from Dataset A and Layer 2 pulls from Dataset B, that's totally fine. This is useful when you're combining things like actual data with reference points or annotations that come from a separate table.
+
+## What about making the axes look right?
+
+By default, R will slap whatever it wants on your axes, which are usually just numbers. If you want your x-axis to show month names instead of numbers 1 through 12, you have to tell it that. Advanced ggplot2 gives you full control over axis labels, tick positions, and formatting. It takes a little extra code, but it makes your final chart look clean and readable to someone who has never seen your dataset before.
+
+\newpage
+
+# Adv. Spatial Viz — Maps in R
+
+## Can R make maps?
+
+Yes, and they can be really good ones. This isn't just slapping a dot on a world map, these are layered, styled, interactive maps that can show things like elevation gradients, city populations, rivers, county borders, and more, all on the same image.
+
+## So what even is "spatial data"?
+
+Spatial data is any data that has a location attached to it. Your dataset isn't just saying "population: 400,000" ; it's saying "population: 400,000, *and this city is located here on Earth.*" That location info is what makes it spatial.
+
+There are a few different forms spatial data comes in:
+
+* **Points:** single locations, like a city or a weather station. Think of a pin dropped on a map.
+* **Polygons:** shapes that cover an area, like county boundaries or lakes. Think of the outline of a state.
+* **Lines:** paths or routes, like rivers or roads.
+* **Raster data:** a grid of values laid over an area, like an elevation map where each tiny square of land has a height value attached to it.
+
+## What is a Coordinate Reference System, and why should I care?
+
+A Coordinate Reference System, also known as a "CRS", is basically the rulebook for how locations on Earth get translated into x and y coordinates on a flat screen. The problem is, Earth is a sphere and screens are flat, so there's no perfect way to do this. Different CRS options make different trade-offs.
+
+Why does this matter? If you try to overlay two datasets that use *different* CRS settings, your map will look completely broken; like the cities are floating in the wrong ocean. R has tools (`st_crs()` and `st_transform()`) to check what CRS your data is using and convert everything to match before you start drawing.
+
+## How do you actually build a map in R?
+
+The main package for this is called `sf`, and it works hand-in-hand with ggplot2. Instead of `geom_point()` or `geom_line()`, you use `geom_sf()`, which knows how to draw spatial data correctly. You layer it the same way as regular ggplot2:
+
+* Load your county polygons → first layer.
+* Add your city points on top → second layer.
+* Add rivers or water features → third layer.
+* Add an elevation gradient in the background → fourth layer.
+
+Each layer adds more detail and context to the story your map is telling.
+
+## Can the maps be interactive?
+
+Yes, using a separate package called `leaflet`, you can create maps that users can actually click around in, zoom into, and hover over for more information. It kind ends up looking like a Google Maps on a particular area that you made.
+
+One thing to keep in mind: leaflet requires your data to be in a specific CRS (EPSG:4326 — the standard GPS coordinate system) before it'll work properly. So you'd transform your data first, then hand it off to leaflet.
+
+## Why go through all this trouble?
+
+A table showing "Hennepin County population: 1.2 million" means less than a map where you can *see* Hennepin County, colored darker than the surrounding counties, with dots showing where the cities are and rivers winding through it. Maps make location-based patterns immediately obvious in a way that numbers alone never can.

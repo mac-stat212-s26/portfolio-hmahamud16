@@ -45,7 +45,7 @@ book:
       # footer text
 
   sidebar:
-    title: "Your Name Here"
+    title: "Hamza Mahamud"
     logo: assets/sidebar-logo.png
     logo-alt: "Random negative space illustration"
     collapse-level: 2
@@ -68,6 +68,7 @@ book:
       chapters:
       - tt/2025-07-08.qmd
       - tt/2025-07-15.qmd
+      - tt/hw01-tt.qmd
 
     - part: "Pre-Class Learnings"
       chapters:
@@ -77,6 +78,20 @@ book:
       chapters:
       - ica/ica-sample1.qmd
       - ica/ica-sample2.qmd
+      - ica/cleaning.qmd
+      - ica/03-adv-ggplot-notes.qmd
+      - ica/04_adv_maps/04-adv-maps-1-notes.qmd
+      - ica/06-wrangling-1-notes.qmd
+      - ica/07-wrangling-2-notes.qmd
+      - ica/08-missing-data-notes.qmd
+      - ica/09-functions-notes.qmd
+      - ica/10-base-r-notes.qmd
+      - ica/11-iteration-1-notes.qmd
+      - ica/12-iteration-2-notes.qmd
+      - ica/14-apis-2-notes.qmd
+      - ica/15-scraping-notes.qmd
+      - ica/16-databases-notes.qmd
+
 
     - part: "Extras"
       chapters:
